@@ -127,7 +127,7 @@ nda<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,null_mode_type=4,mod_
   }
 
   if (ncol(L)>1 && use_rotation==TRUE){
-    L<-principal(L,nfactors = dim(L)[2])$scores
+    L<-psych::principal(L,nfactors = dim(L)[2])$scores
   }else{
     L<-scale(L)
   }
@@ -180,7 +180,7 @@ nda<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,null_mode_type=4,mod_
       }
     }
     if (ncol(L)>1 && use_rotation==TRUE){
-      L<-principal(L,nfactors = dim(L)[2])$scores
+      L<-psych::principal(L,nfactors = dim(L)[2])$scores
     }else{
       L<-scale(L)
     }
