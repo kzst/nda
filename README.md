@@ -1,5 +1,4 @@
-# nda
-Network-based dimensionality reduction of high-dimensional, low-sample-size datasets
+# Network-based dimensionality reduction of high-dimensional, low-sample-size datasets (NDA)
 
 install.packages(devtools)
 
