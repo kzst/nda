@@ -4,7 +4,7 @@
 %%  ~~function to do ... ~~
 }
 \description{
-Network-based dimensionality reduction of high-dimensional, low-sample-size datasets
+Network-based dimensionality reduction and analysis.
 }
 \usage{
 ndr(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,null_modell_type=4,
