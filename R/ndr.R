@@ -1,17 +1,26 @@
-nda<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,null_mode_type=4,mod_mode=6,min_evalue=0,min_communality=0,com_communalities=0,use_rotation=FALSE){
+#-----------------------------------------------------------------------------#
+#                                                                             #
+#  NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (NDA)                  #
+#                                                                             #
+#  Written by: Zsolt T. Kosztyan*, Marcell T. Kurbucz, Attila I. Katona       #
+#              *Department of Quantitative Methods                            #
+#              University of Pannonia, Hungary                                #
+#              kzst@gtk.uni-pannon.hu                                         #
+#                                                                             #
+# Last modified: May 2022                                                     #
+#-----------------------------------------------------------------------------#
+
+#' @export
+
+ndr<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,null_modell_type=4,mod_mode=6,min_evalue=0,min_communality=0,com_communalities=0,use_rotation=FALSE){
+
+
   if (!requireNamespace("energy", quietly = TRUE)) {
     stop(
       "Package \"energy\" must be installed to use this function.",
       call. = FALSE
     )
   }
-  if (!requireNamespace("leidenAlg", quietly = TRUE)) {
-    stop(
-      "Package \"leidenAlg\" must be installed to use this function.",
-      call. = FALSE
-    )
-  }
-
   if (!requireNamespace("psych", quietly = TRUE)) {
     stop(
       "Package \"psych\" must be installed to use this function.",
@@ -24,7 +33,18 @@ nda<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,null_mode_type=4,mod_
       call. = FALSE
     )
   }
-
+  if (!requireNamespace("leidenAlg", quietly = TRUE)) {
+    stop(
+      "Package \"leidenAlg\" must be installed to use this function.",
+      call. = FALSE
+    )
+  }
+  if (!requireNamespace("stats", quietly = TRUE)) {
+    stop(
+      "Package \"stats\" must be installed to use this function.",
+      call. = FALSE
+    )
+  }
   DATA<-data
   X<-data
 
@@ -32,9 +52,9 @@ nda<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,null_mode_type=4,mod_
 
   COR=switch(
     cor_method,
-    "1"=cor(X),
-    "2"=cor(X,"spearman"),
-    "3"=cor(X,"kendall"),
+    "1"=stats::cor(X),
+    "2"=stats::cor(X,method="spearman"),
+    "3"=stats::cor(X,method="kendall"),
     "4"=dCor(X)
   )
   COR[is.na(COR)]<-0
@@ -63,7 +83,7 @@ nda<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,null_mode_type=4,mod_
     null_modell_type,
     "1"=R-N*Gamma,
     "2"=R-matrix(mean(R[R>0])*Gamma,nrow(R),ncol(R)),
-    "3"=R-matrix(min_cor2*Gamma,nrow(R),ncol(R)),
+    "3"=R-matrix(min_R*Gamma,nrow(R),ncol(R)),
     "4"=R
   )
   MTX[MTX<0]<-0
@@ -80,7 +100,7 @@ nda<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,null_mode_type=4,mod_
 
   S<-as.numeric(modular$membership)
 
-  sizes(modular)
+  igraph::sizes(modular)
 
   for (i in 1: max(S)){
     if (nrow(as.matrix(coords[S==i]))<min_comm){
@@ -134,16 +154,16 @@ nda<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,null_mode_type=4,mod_
 
   C=switch(
     cor_method,
-    "1"=cor(L),
-    "2"=cor(L,"spearman"),
-    "3"=cor(L,"kendall"),
+    "1"=stats::cor(L),
+    "2"=stats::cor(L,method="spearman"),
+    "3"=stats::cor(L,method="kendall"),
     "4"=dCor(L)
   )
   LOADING=switch(
     cor_method,
-    "1"=cor(data[,S>0],L),
-    "2"=cor(data[,S>0],L,"spearman"),
-    "3"=cor(data[,S>0],L,"kendall"),
+    "1"=stats::cor(data[,S>0],L),
+    "2"=stats::cor(data[,S>0],L,method="spearman"),
+    "3"=stats::cor(data[,S>0],L,method="kendall"),
     "4"=dCor(data[,S>0],L)
   )
   COMMUNALITY<-t(apply(LOADING^2,1,max))
@@ -186,16 +206,16 @@ nda<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,null_mode_type=4,mod_
     }
     C=switch(
       cor_method,
-      "1"=cor(L),
-      "2"=cor(L,"spearman"),
-      "3"=cor(L,"kendall"),
+      "1"=stats::cor(L),
+      "2"=stats::cor(L,method="spearman"),
+      "3"=stats::cor(L,method="kendall"),
       "4"=dCor(L)
     )
     LOADING=switch(
       cor_method,
-      "1"=cor(data[,S>0],L),
-      "2"=cor(data[,S>0],L,"spearman"),
-      "3"=cor(data[,S>0],L,"kendall"),
+      "1"=stats::cor(data[,S>0],L),
+      "2"=stats::cor(data[,S>0],L,method="spearman"),
+      "3"=stats::cor(data[,S>0],L,method="kendall"),
       "4"=dCor(data[,S>0],L)
     )
     COMMUNALITY<-t(apply(LOADING^2,1,max))
@@ -242,7 +262,12 @@ nda<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,null_mode_type=4,mod_
       Coordsi=Coords[(S==M[i])&(coords==1)]
       EVC<-as.matrix(igraph::eigen_centrality(igraph::graph.adjacency(R[Coordsi,Coordsi], mode = "undirected", weighted = TRUE, diag = FALSE))$vector)
       EVCs[[i]]<-EVC
-      L[,i]<-as.matrix(rowSums(data[,Coordsi] * EVC))
+      result<-NA
+      try(result <- as.matrix(rowSums(data[,Coordsi] %*% EVC)),silent=TRUE)
+      if (is.null(nrow(is.nan(result)))){
+        try(result <- as.matrix(rowSums(data[,Coordsi] * EVC)),silent=TRUE)
+      }
+      L[,i]<-result
     }
     if (ncol(L)>1 && use_rotation==TRUE){
       L<-psych::principal(L,nfactors = dim(L)[2])$scores
@@ -251,16 +276,16 @@ nda<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,null_mode_type=4,mod_
     }
     C=switch(
       cor_method,
-      "1"=cor(L),
-      "2"=cor(L,"spearman"),
-      "3"=cor(L,"kendall"),
+      "1"=stats::cor(L),
+      "2"=stats::cor(L,method="spearman"),
+      "3"=stats::cor(L,method="kendall"),
       "4"=dCor(L)
     )
     LOADING=switch(
       cor_method,
-      "1"=cor(data[,S>0],L),
-      "2"=cor(data[,S>0],L,"spearman"),
-      "3"=cor(data[,S>0],L,"kendall"),
+      "1"=stats::cor(data[,S>0],L),
+      "2"=stats::cor(data[,S>0],L,method="spearman"),
+      "3"=stats::cor(data[,S>0],L,method="kendall"),
       "4"=dCor(data[,S>0],L)
     )
     COMMUNALITY<-t(apply(LOADING^2,1,max))
@@ -278,6 +303,7 @@ nda<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,null_mode_type=4,mod_
   P$n.obs<-nrow(DATA)
   P$fn<-"NDA"
 
-  nda<-P
+  class(P) <- "NDA"
+  return(P)
 }
 

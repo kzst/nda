@@ -13,17 +13,17 @@ CWTS Leiden's 2020 dataset, where the data frame has 1176 observations of 42 var
 \format{
   A data frame with 1176 observations of 42 variables.
 }
-\details{
-%%  ~~ If necessary, more details than the __description__ above ~~
-}
+
 \source{
 CWTS Leiden Ranking 2020: https://www.leidenranking.com/ranking/2020/list
 }
-\references{
-%%  ~~ possibly secondary sources and usages ~~
-}
+
 \examples{
 data(CWTS_2020)
+
+%%% Convert Unicodes to UTF-8 in the university names
+% library(stringi)
+% rownames(CWTS_2020)<-stri_unescape_unicode((gsub("<U\\+(....)>", "\\\\u\\1",(rownames(CWTS_2020)))))
 
 }
 \keyword{datasets}

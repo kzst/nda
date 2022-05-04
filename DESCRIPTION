@@ -1,13 +1,15 @@
 Package: nda
 Type: Package
-Title: Network-based dimensionality reduction of high-dimensional, low-sample-size datasets (NDA)
-Version: 0.1.0
+Title: Network-based Dimensionality reduction and Analys (NDA)
+Version: 0.1.1
 Author: c(
-    person("Zsolt T.", "Kosztyan", email="kzst@gtk.uni-pannon.hu", role = c("aut", "cre"))
+    person("Zsolt T.", "Kosztyan", email="kosztyan.zsolt@gtk.uni-pannon.hu", role = c("aut", "cre")),
+    person("Marcell T.", "Kurbucz", email="kurbuczmarcell@gtk.uni-pannon.hu", role = c("aut", "cre")),
+    person("Attila I.", "Katona", email="katona.attila@gtk.uni-pannon.hu", role = c("aut", "cre"))
     )
 Maintainer: Zsolt T. Kosztyan <kzst@gtk.uni-pannon.hu>
-Description: Network-based dimensionality reduction of high-dimensional, low-sample-size datasets
-License: MIT + file LICENSE
+Description: Network-based Dimensionality reduction and Analys (NDA). Reduction and plotting functions.
+License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
 URL: https://github.com/kzst/nda
@@ -16,5 +18,7 @@ Depends:
 Imports: 
     leidenAlg,
     energy,
-    psych,
+    psych, 
+    stats,
     igraph
+RoxygenNote: 7.1.1

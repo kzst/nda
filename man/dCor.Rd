@@ -1,12 +1,14 @@
 \name{dCor}
 \alias{dCor}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{Calculating distance correlation of two vectors or columns of a matrix 
-%%  ~~function to do ... ~~
+\title{Calculating distance correlation of two vectors or columns of a matrix
 }
-\description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
+
+\description{Calculating distance correlation of two vectors or columns of a matrix for NDA.
+
+The calculation is very slow for large matrices!
 }
+
 \usage{
 dCor(x,y=NULL)
 }
@@ -41,15 +43,7 @@ Prof. Zsolt T. Kosztyan, Department of Quantitative Methods, Institute of Manage
 
 e-mail: kzst@gtk.uni-pannon.hu
 }
-\note{
-%%  ~~further notes~~
-}
 
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
-\seealso{
-%% ~~objects to See Also as \code{\link{help}}, ~~~
-}
 \examples{
 # Specification of distance correlation value of vectors x and y.
 x<-rnorm(36)
@@ -59,8 +53,7 @@ dCor(x,y)
 x<-matrix(rnorm(36),nrow=6)
 dCor(x)
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory (show via RShowDoc("KEYWORDS")):
+
 \keyword{array}
 \keyword{multivariate}
 % Use only one keyword per line.
