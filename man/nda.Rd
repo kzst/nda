@@ -8,7 +8,7 @@
 Network-based Dimensionality reduction and Analysis. Biplot function.
 }
 
-\seealso{\code{\link{ndr}}, \code{\link{dCor}}.}
+\seealso{\code{\link{ndr}}, \code{\link{plot}}, \code{\link{biplot}}, \code{\link{summary}}, \code{\link{dCor}}.}
 
 \author{Zsolt T. Kosztyan*, Marcell T. Kurbucz, Attila I. Katona
 

@@ -22,7 +22,7 @@ Zsolt T. Kosztyan*, Marcell T. Kurbucz, Attila I. Katona
 e-mail*: kzst@gtk.uni-pannon.hu
 }
 
-\seealso{\code{\link{biplot}}, \code{\link{ndr}}.}
+\seealso{\code{\link{biplot}}, \code{\link{summary}}, \code{\link{ndr}}.}
 
 \examples{
 # Plot function with feature selection
