@@ -43,9 +43,9 @@ NDA both works on low and high simple size datasets. If min_evalue=min_communali
 }
 
 \author{
-Prof. Zsolt T. Kosztyan, Department of Quantitative Methods, Institute of Management, Faculty of Business and Economics, University of Pannonia, Hungary
+Zsolt T. Kosztyan*, Marcell T. Kurbucz, Attila I. Katona
 
-e-mail: kzst@gtk.uni-pannon.hu
+e-mail*: kzst@gtk.uni-pannon.hu
 }
 
 \examples{
@@ -53,7 +53,9 @@ e-mail: kzst@gtk.uni-pannon.hu
 data(swiss)
 df<-swiss
 p<-ndr(df)
-p
+summary(p)
+plot(p)
+biplot(p)
 
 }
 

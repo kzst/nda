@@ -1,10 +1,17 @@
+Version 0.1.2
+
+   o fixed some bugs
+
+   o plot, biplot functions are specified
+
+   o summary, print functions are specified
+
+
 Version 0.1.1
 
    o fixed some bugs
 
-   o plot function is specified
-
-   o added a new dataset about crimes in the USA
+   o added a new dataset about crimes in the USA 1994
 
 
 Version 0.1.0

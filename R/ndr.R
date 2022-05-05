@@ -301,9 +301,10 @@ ndr<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,null_modell_type=4,mo
   rownames(P$scores)<-rownames(DATA)
   colnames(P$scores)<-paste("NDA",1:nrow(as.matrix(M)),sep = "")
   P$n.obs<-nrow(DATA)
+  P$R<-R
+  P$membership<-S
   P$fn<-"NDA"
-
-  class(P) <- "NDA"
+  class(P) <- "nda"
   return(P)
 }
 
