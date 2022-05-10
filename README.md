@@ -2,7 +2,11 @@
 
 This package provides Network-based dimensionality reduction and analysis. 
 
-* Network-based dimensionality reduction and analysis. Dimensional Reduction.
+* Network-based dimensionality reduction and analysis. 
+
+* Dimensional reduction. 
+* Plot and biplot functions
+* Data generation
 
 #### Author
 
