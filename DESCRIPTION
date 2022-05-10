@@ -1,7 +1,7 @@
 Package: nda
 Type: Package
 Title: Network-based Dimensionality reduction and Analys (NDA)
-Version: 0.1.2
+Version: 0.1.3
 Author: c(
     person("Zsolt T.", "Kosztyan", email="kosztyan.zsolt@gtk.uni-pannon.hu", role = c("aut", "cre")),
     person("Marcell T.", "Kurbucz", email="kurbuczmarcell@gtk.uni-pannon.hu", role = c("aut", "cre")),
@@ -22,5 +22,6 @@ Imports:
     stats,
     igraph,
     dplyr,
+    Matrix,
     visNetwork
 RoxygenNote: 7.1.2
