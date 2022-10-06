@@ -19,6 +19,12 @@ data_gen<-function(n,m,nfactors=2,lambda=1){
       call. = FALSE
     )
   }
+  if (!requireNamespace("stats", quietly = TRUE)) {
+    stop(
+      "Package \"stats\" must be installed to use this function.",
+      call. = FALSE
+    )
+  }
   M<-NA
   if (n>=1)
     {
@@ -31,7 +37,7 @@ data_gen<-function(n,m,nfactors=2,lambda=1){
                                     ceiling(m/nfactors)),simplify=FALSE)
                 M<-Matrix::bdiag(L)
                 M<-as.matrix(M[1:n,1:m])
-                N<-matrix(runif(n*m),n,m)
+                N<-matrix(stats::runif(n*m),n,m)
                 M<-M-N*M/exp(lambda)
               }
             else

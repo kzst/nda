@@ -9,31 +9,42 @@
 #                                                                             #
 # Last modified: May 2022                                                     #
 #-----------------------------------------------------------------------------#
-
 #' @export
-
 biplot.nda <- function(x, main=NULL,...){
+  if (!requireNamespace("graphics", quietly = TRUE)) {
+    stop(
+      "Package \"graphics\" must be installed to use this function.",
+      call. = FALSE
+    )
+  }
+  if (!requireNamespace("stats", quietly = TRUE)) {
+    stop(
+      "Package \"stats\" must be installed to use this function.",
+      call. = FALSE
+    )
+  }
   oldw <- getOption("warn")
   options(warn = -1)
-  if (class(x)=="nda"){
-    par(mfrow=c(x$factors,x$factors))
-    op <- par(pty = "s")
+  if ("nda" %in% class(x)){
+    graphics::par(mfrow=c(x$factors,x$factors))
+    # op <- par(pty = "s")
+    op <- graphics::par(mar = rep(2.0,4))
     if(!is.null(main))
-      op <- c(op, par(mar = par("mar")+c(0,0,1,0)))
+      op <- c(op, graphics::par(mar = graphics::par("mar")+c(0,0,1,0)))
     for (i in c(1:x$factors)){
       for (j in c(1:x$factors)){
         if (i==j){
-          hist(x$scores[,i],col="cyan",prob=TRUE,main = paste("NDA",i,sep=""),xlab="",ylab="")
-          lines(density(x$scores[,i]),col="red",lwd=2)
+          graphics::hist(x$scores[,i],col="cyan",prob=TRUE,main = paste("NDA",i,sep=""),xlab="",ylab="")
+          graphics::lines(stats::density(x$scores[,i]),col="red",lwd=2)
         }else{
-          biplot(x$scores[,c(i,j)],x$loadings[,c(i,j)],xlab="",ylab="")
+          stats::biplot(x$scores[,c(i,j)],x$loadings[,c(i,j)],xlab="",ylab="")
         }
       }
     }
     if(!is.null(main))
-      mtext(main, line = -1.2, outer = TRUE)
+      graphics::mtext(main, line = -1.2, outer = TRUE)
   }else{
-    biplot(x,main,...)
+    stats::biplot(x,main,...)
   }
   options(warn = oldw)
 }

@@ -88,6 +88,7 @@ ndr<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,null_modell_type=4,mo
   )
   MTX[MTX<0]<-0
 
+  cor_method<-1 # Non-linear correlation only used for the correlation graph
   modular=switch(
     mod_mode,
     "1"=igraph::cluster_louvain(igraph::graph.adjacency(MTX, mode = "undirected", weighted = TRUE, diag = FALSE)),

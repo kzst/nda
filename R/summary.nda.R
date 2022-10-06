@@ -17,7 +17,7 @@ summary.nda <- function(object,  digits =  getOption("digits"), ...) {
       call. = FALSE
     )
   }
-  if (class(object)=="nda"){
+  if ("nda" %in% class(object)){
     communality <- object$communality
     loadings <- object$loadings
     uniqueness <- object$uniqueness
@@ -32,8 +32,8 @@ summary.nda <- function(object,  digits =  getOption("digits"), ...) {
     print(communality,digits = digits, ...)
     cat("\nFactor loadings:\n")
     print(loadings,digits = digits, ...)
-    cat("\n\nCorrelaction matrix of factor loadings:\n")
-    print(stats::cor(loadings),digits = digits, ...)
+    cat("\n\nCorrelaction matrix of factor scores:\n")
+    print(stats::cor(scores),digits = digits, ...)
   }else{
     summary(object,...)
   }
