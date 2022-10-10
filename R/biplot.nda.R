@@ -7,7 +7,7 @@
 #              University of Pannonia, Hungary                                #
 #              kzst@gtk.uni-pannon.hu                                         #
 #                                                                             #
-# Last modified: May 2022                                                     #
+# Last modified: October 2022                                                 #
 #-----------------------------------------------------------------------------#
 #' @export
 biplot.nda <- function(x, main=NULL,...){
@@ -34,7 +34,8 @@ biplot.nda <- function(x, main=NULL,...){
     for (i in c(1:x$factors)){
       for (j in c(1:x$factors)){
         if (i==j){
-          graphics::hist(x$scores[,i],col="cyan",prob=TRUE,main = paste("NDA",i,sep=""),xlab="",ylab="")
+          graphics::hist(x$scores[,i],col="cyan",prob=TRUE,
+                         main = paste("NDA",i,sep=""),xlab="",ylab="")
           graphics::lines(stats::density(x$scores[,i]),col="red",lwd=2)
         }else{
           stats::biplot(x$scores[,c(i,j)],x$loadings[,c(i,j)],xlab="",ylab="")

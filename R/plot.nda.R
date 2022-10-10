@@ -7,7 +7,7 @@
 #              University of Pannonia, Hungary                                #
 #              kzst@gtk.uni-pannon.hu                                         #
 #                                                                             #
-# Last modified: May 2022                                                     #
+# Last modified: October 2022                                                 #
 #-----------------------------------------------------------------------------#
 #' @export
 plot.nda <- function(x,cuts=0.3,...){
@@ -50,27 +50,22 @@ plot.nda <- function(x,cuts=0.3,...){
       color="#5080b1"
     )
 
-    #nodes$title<-nodes$id
     nw <-
-      visNetwork::visIgraphLayout(visNetwork::visNodes(visNetwork::visInteraction(visNetwork::visOptions(visNetwork::visNetwork(nodes, edges, height = "1000px", width = "100%"),highlightNearest = TRUE, selectedBy = "label"),dragNodes = TRUE,
-                                                                                  dragView = TRUE,
-                                                                                  zoomView = TRUE,
-                                                                                  hideEdgesOnDrag = FALSE),physics=FALSE, size=16, borderWidth = 1,
-                                                       font=list(face="calibri")),layout = "layout_nicely",
-                                  physics = TRUE, type="full"
+      visNetwork::visIgraphLayout(
+        visNetwork::visNodes(
+          visNetwork::visInteraction(
+            visNetwork::visOptions(
+              visNetwork::visNetwork(
+                nodes, edges, height = "1000px", width = "100%"),
+                  highlightNearest = TRUE, selectedBy = "label"),
+                  dragNodes = TRUE,
+                  dragView = TRUE,
+                  zoomView = TRUE,
+                  hideEdgesOnDrag = FALSE),physics=FALSE, size=16,
+                  borderWidth = 1,
+                  font=list(face="calibri")),layout = "layout_nicely",
+                  physics = TRUE, type="full"
       )
-    #nw <-
-    #  visNetwork::visNetwork(nodes, edges, height = "1000px", width = "100%") %>%
-    #  visNetwork::visOptions(highlightNearest = TRUE, selectedBy = "label") %>%
-    #  visNetwork::visInteraction(dragNodes = TRUE,
-    #                 dragView = TRUE,
-    #                 zoomView = TRUE,
-    #                 hideEdgesOnDrag = FALSE) %>%
-    #  visNetwork::visNodes(physics=FALSE, size=16, borderWidth = 1,
-    #                       font=list(face="calibri")) %>%
-    #  visNetwork::visIgraphLayout(layout = "layout_nicely",
-    #                              physics = TRUE, type="full"
-    #  )
     nw
   }else{
     plot(x,...)

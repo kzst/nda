@@ -9,7 +9,6 @@ Biplot function for Network-based, non-parametric dimensionality reduction and a
 \usage{
 \method{biplot}{nda}(x, main=NULL,...)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{an object of class 'NDA'.}
   \item{main}{main title of biplot.}

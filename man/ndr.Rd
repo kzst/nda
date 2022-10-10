@@ -1,7 +1,6 @@
 \name{ndr}
 \alias{ndr}
 \title{Network-based, non-parametric dimensionality reduction and analysis
-%%  ~~function to do ... ~~
 }
 \description{
 Network-based dimensionality reduction and analysis.
@@ -11,7 +10,6 @@ ndr(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,null_modell_type=4,
 mod_mode=6,min_evalue=0,min_communality=0,com_communalities=0,use_rotation)
 
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data}{A numeric data frame}
   \item{cor_method}{Correlation method (optional).
@@ -63,11 +61,5 @@ biplot(p)
 
 \keyword{multivariate}
 \keyword{nonparametric}
-% \keyword{ ~kwd1 }
-% \keyword{ ~kwd2 }
-% Use only one keyword per line.
-% For non-standard keywords, use \concept instead of \keyword:
 \concept{dimensionality}
 \concept{reduction}
-% \concept{ ~cpt2 }
-% Use only one concept per line.

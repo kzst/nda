@@ -9,7 +9,6 @@ Plot variable network graph
 \usage{
 \method{plot}{nda}(x, cuts=0.3,...)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{an object of class 'NDA'.}
   \item{cuts}{minimal correlation square value for an edge in the variable network graph.}

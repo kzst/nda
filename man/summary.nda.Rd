@@ -11,7 +11,6 @@ Print summary of Network-based, non-parametric dimensionality reduction and anal
 \method{summary}{nda}(object, digits = getOption("digits"), ...)
 }
 
-%- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{object}{an object of class 'nda'.}
   \item{digits}{the number of significant digits to use when \code{add.stats = TRUE}.}

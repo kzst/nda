@@ -7,7 +7,7 @@
 #              University of Pannonia, Hungary                                #
 #              kzst@gtk.uni-pannon.hu                                         #
 #                                                                             #
-# Last modified: May 2022                                                     #
+# Last modified: October 2022                                                 #
 #-----------------------------------------------------------------------------#
 #' @export
 summary.nda <- function(object,  digits =  getOption("digits"), ...) {

@@ -1,6 +1,5 @@
 \name{dCor}
 \alias{dCor}
-%- Also NEED an '\alias' for EACH other topic documented here.
 \title{Calculating distance correlation of two vectors or columns of a matrix
 }
 
@@ -12,7 +11,6 @@ The calculation is very slow for large matrices!
 \usage{
 dCor(x,y=NULL)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{x}{a numeric vector, a numeric matrix (in this case y=NULL), or a numeric data frame (in this case y=NULL)}
   \item{y}{a numeric vector (optional)}
@@ -23,15 +21,8 @@ If \code{x} is a numeric vector, \code{y} must be specified. If x is a numeric m
 \value{
 
 Either a distance correlation value of vectors \code{x} and \code{y}, or a distance correlation matrix of \code{x}.
-%%  ~Describe the value returned
-%%  If it is a LIST, use
-%%  \item{comp1 }{Description of 'comp1'}
-%%  \item{comp2 }{Description of 'comp2'}
-%% ...
 }
 \references{
-%% ~put references to the literature/web site here ~
-
 Rizzo M, Szekely G (2021). _energy: E-Statistics:
 Multivariate Inference via the Energy of Data_. R
 package version 1.7-8, <URL:
@@ -56,9 +47,6 @@ dCor(x)
 
 \keyword{array}
 \keyword{multivariate}
-% Use only one keyword per line.
-% For non-standard keywords, use \concept instead of \keyword:
 \concept{correlation matrix}
 \concept{distance correlation}
-% Use only one concept per line.
 

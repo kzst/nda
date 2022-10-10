@@ -21,9 +21,5 @@ CWTS Leiden Ranking 2020: https://www.leidenranking.com/ranking/2020/list
 \examples{
 data(CWTS_2020)
 
-%%% Convert Unicodes to UTF-8 in the university names
-% library(stringi)
-% rownames(CWTS_2020)<-stri_unescape_unicode((gsub("<U\\+(....)>", "\\\\u\\1",(rownames(CWTS_2020)))))
-
 }
 \keyword{datasets}

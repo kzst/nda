@@ -53,7 +53,5 @@ plot(ndr(df))
 
 \keyword{array}
 \keyword{multivariate}
-% Use only one keyword per line.
-% For non-standard keywords, use \concept instead of \keyword:
 \concept{random block matrix}
 

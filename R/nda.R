@@ -10,7 +10,127 @@
 # Last modified: October 2022                                                 #
 #-----------------------------------------------------------------------------#
 
-#' @export
+###### BIPLOT FOR NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (NDA) #####
+
+biplot.nda <- function(x, main=NULL,...){
+  if (!requireNamespace("graphics", quietly = TRUE)) {
+    stop(
+      "Package \"graphics\" must be installed to use this function.",
+      call. = FALSE
+    )
+  }
+  if (!requireNamespace("stats", quietly = TRUE)) {
+    stop(
+      "Package \"stats\" must be installed to use this function.",
+      call. = FALSE
+    )
+  }
+  oldw <- getOption("warn")
+  options(warn = -1)
+  if ("nda" %in% class(x)){
+    graphics::par(mfrow=c(x$factors,x$factors))
+    # op <- par(pty = "s")
+    op <- graphics::par(mar = rep(2.0,4))
+    if(!is.null(main))
+      op <- c(op, graphics::par(mar = graphics::par("mar")+c(0,0,1,0)))
+    for (i in c(1:x$factors)){
+      for (j in c(1:x$factors)){
+        if (i==j){
+          graphics::hist(x$scores[,i],col="cyan",prob=TRUE,
+                         main = paste("NDA",i,sep=""),xlab="",ylab="")
+          graphics::lines(stats::density(x$scores[,i]),col="red",lwd=2)
+        }else{
+          stats::biplot(x$scores[,c(i,j)],x$loadings[,c(i,j)],xlab="",ylab="")
+        }
+      }
+    }
+    if(!is.null(main))
+      graphics::mtext(main, line = -1.2, outer = TRUE)
+  }else{
+    stats::biplot(x,main,...)
+  }
+  options(warn = oldw)
+}
+
+# DATA GENERATION FOR NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (NDA) #
+
+data_gen<-function(n,m,nfactors=2,lambda=1){
+  if (!requireNamespace("Matrix", quietly = TRUE)) {
+    stop(
+      "Package \"Matrix\" must be installed to use this function.",
+      call. = FALSE
+    )
+  }
+  if (!requireNamespace("stats", quietly = TRUE)) {
+    stop(
+      "Package \"stats\" must be installed to use this function.",
+      call. = FALSE
+    )
+  }
+  M<-NA
+  if (n>=1)
+  {
+    if (m>=1)
+    {
+      M<-matrix(0,nrow=n,ncol=m)
+      if (nfactors>=1)
+      {
+        L<-replicate(nfactors,matrix(1,ceiling(n/nfactors),
+                                     ceiling(m/nfactors)),simplify=FALSE)
+        M<-Matrix::bdiag(L)
+        M<-as.matrix(M[1:n,1:m])
+        N<-matrix(stats::runif(n*m),n,m)
+        M<-M-N*M/exp(lambda)
+      }
+      else
+      {
+        warning("nfactors must be equal to or greater than 1!")
+      }
+    }
+    else
+    {
+      warning("m must be equal to or greater than 1!")
+    }
+  }
+  else
+  {
+    warning("n must be equal to or greater than 1!")
+  }
+  return(as.data.frame(M))
+}
+
+######## MATRIX-BASED DISTANCE CORRELATION ########
+
+dCor<-function(x,y=NULL){
+  if (!requireNamespace("energy", quietly = TRUE)) {
+    stop(
+      "Package \"energy\" must be installed to use this function.",
+      call. = FALSE
+    )
+  }
+  if (is.null(y)){
+    if (is.data.frame(x)|is.matrix(x)){
+      dC<-matrix(0,nrow=ncol(x),ncol=ncol(x))
+      for (i in c(1:ncol(x))){
+        for (j in c(1:ncol(x))){
+          dC[i,j]<-energy::dcor(x[,i],x[,j])
+        }
+      }
+      rownames(dC)<-colnames(x)
+      colnames(dC)<-colnames(x)
+      dCor<-dC
+      dCor
+    }else{
+      stop("Error: x must be a matrix or a dataframe!")
+      dCor<-NULL
+    }
+  }else{
+    dCor<-energy::dcor(x,y)
+    dCor
+  }
+}
+
+########### NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (NDA) ###########
 
 ndr<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,
               null_modell_type=4,mod_mode=6,min_evalue=0,
@@ -94,17 +214,17 @@ ndr<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,
   modular=switch(
     mod_mode,
     "1"=igraph::cluster_louvain(igraph::graph.adjacency(MTX,
-              mode = "undirected", weighted = TRUE, diag = FALSE)),
+                                                        mode = "undirected", weighted = TRUE, diag = FALSE)),
     "2"=igraph::cluster_fast_greedy(igraph::graph.adjacency(MTX,
-              mode = "undirected", weighted = TRUE, diag = FALSE)),
+                                                            mode = "undirected", weighted = TRUE, diag = FALSE)),
     "3"=igraph::cluster_leading_eigen(igraph::graph.adjacency(MTX,
-              mode = "undirected", weighted = TRUE, diag = FALSE)),
+                                                              mode = "undirected", weighted = TRUE, diag = FALSE)),
     "4"=igraph::cluster_infomap(igraph::graph.adjacency(MTX,
-              mode = "undirected", weighted = TRUE, diag = FALSE)),
+                                                        mode = "undirected", weighted = TRUE, diag = FALSE)),
     "5"=igraph::cluster_walktrap(igraph::graph.adjacency(MTX,
-              mode = "undirected", weighted = TRUE, diag = FALSE)),
+                                                         mode = "undirected", weighted = TRUE, diag = FALSE)),
     "6"=leidenAlg::leiden.community(igraph::graph.adjacency(MTX,
-              mode = "undirected", weighted = TRUE, diag = FALSE))
+                                                            mode = "undirected", weighted = TRUE, diag = FALSE))
   )
 
   S<-as.numeric(modular$membership)
@@ -142,10 +262,10 @@ ndr<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,
     Coordsi<-Coords[(S==M[i])&(coords==1)]
     EVC<-as.matrix(igraph::eigen_centrality(igraph::graph.adjacency(
       R[Coordsi,Coordsi], mode = "undirected",
-        weighted = TRUE, diag = FALSE))$vector)
+      weighted = TRUE, diag = FALSE))$vector)
     if ((nrow(as.matrix(EVC[EVC>min_evalue]))>2)&(nrow(EVC)>2)){
       L[,i]<-as.matrix(rowSums(data[,
-        Coordsi[EVC>min_evalue]] * EVC[EVC>min_evalue]))
+                                    Coordsi[EVC>min_evalue]] * EVC[EVC>min_evalue]))
       coords[Coordsi[EVC<=min_evalue]]<-0
       coords[Coordsi[EVC<=min_evalue]]<-0
       S[Coordsi[EVC<=min_evalue]]<-0
@@ -272,7 +392,7 @@ ndr<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,
       Coordsi=Coords[(S==M[i])&(coords==1)]
       EVC<-as.matrix(igraph::eigen_centrality(igraph::graph.adjacency(
         R[Coordsi,Coordsi], mode = "undirected",
-          weighted = TRUE, diag = FALSE))$vector)
+        weighted = TRUE, diag = FALSE))$vector)
       EVCs[[i]]<-EVC
       result<-NA
       try(result <- as.matrix(rowSums(data[,Coordsi] %*% EVC)),silent=TRUE)
@@ -320,3 +440,97 @@ ndr<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,
   return(P)
 }
 
+####### PLOT FOR NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (NDA) ######
+
+plot.nda <- function(x,cuts=0.3,...){
+  if ("nda" %in% class(x)){
+    if (!requireNamespace("igraph", quietly = TRUE)) {
+      stop(
+        "Package \"igraph\" must be installed to use this function.",
+        call. = FALSE
+      )
+    }
+    if (!requireNamespace("stats", quietly = TRUE)) {
+      stop(
+        "Package \"stats\" must be installed to use this function.",
+        call. = FALSE
+      )
+    }
+    if (!requireNamespace("visNetwork", quietly = TRUE)) {
+      stop(
+        "Package \"visNetwork\" must be installed to use this function.",
+        call. = FALSE
+      )
+    }
+    R2<-G<-nodes<-edges<-NULL
+    R2<-x$R
+    R2[R2<cuts]<-0
+
+    G=igraph::graph.adjacency(R2, mode = "undirected",
+                              weighted = TRUE, diag = FALSE)
+    nodes<-as.data.frame(igraph::V(G)$name)
+    nodes$label<-rownames(x$R)
+    nodes$color<-grDevices::hsv(x$membership/max(x$membership))
+    nodes[x$membership==0,"color"]<-"#000000"
+    colnames(nodes)<-c("id","title","color")
+    edges<-as.data.frame(igraph::as_edgelist(G))
+    edges <- data.frame(
+      from=edges$V1,
+      to=edges$V2,
+      smooth=c(FALSE),
+      width=igraph::E(G)$weight,
+      color="#5080b1"
+    )
+
+    nw <-
+      visNetwork::visIgraphLayout(
+        visNetwork::visNodes(
+          visNetwork::visInteraction(
+            visNetwork::visOptions(
+              visNetwork::visNetwork(
+                nodes, edges, height = "1000px", width = "100%"),
+              highlightNearest = TRUE, selectedBy = "label"),
+            dragNodes = TRUE,
+            dragView = TRUE,
+            zoomView = TRUE,
+            hideEdgesOnDrag = FALSE),physics=FALSE, size=16,
+          borderWidth = 1,
+          font=list(face="calibri")),layout = "layout_nicely",
+        physics = TRUE, type="full"
+      )
+    nw
+  }else{
+    plot(x,...)
+  }
+}
+
+# SUMMARY FUNCTION FOR NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (NDA)#
+
+summary.nda <- function(object,  digits =  getOption("digits"), ...) {
+  if (!requireNamespace("stats", quietly = TRUE)) {
+    stop(
+      "Package \"stats\" must be installed to use this function.",
+      call. = FALSE
+    )
+  }
+  if ("nda" %in% class(object)){
+    communality <- object$communality
+    loadings <- object$loadings
+    uniqueness <- object$uniqueness
+    factors <- object$factors
+    scores <- object$scores
+    n.obs <- object$n.obs
+    factors <- object$factors
+    cat("\nSummary of the NDA:\n")
+    cat("\nNumber of latent variables: ",factors)
+    cat("\nNumber of observations: ",n.obs)
+    cat("\nCommunalities:\n")
+    print(communality,digits = digits, ...)
+    cat("\nFactor loadings:\n")
+    print(loadings,digits = digits, ...)
+    cat("\n\nCorrelaction matrix of factor scores:\n")
+    print(stats::cor(scores),digits = digits, ...)
+  }else{
+    summary(object,...)
+  }
+}
