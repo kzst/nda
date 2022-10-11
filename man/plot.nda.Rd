@@ -1,7 +1,7 @@
 \name{plot.nda}
 \alias{plot.nda}
 \title{
-Plot function for Network-based, non-parametric dimensionality reduction and analysis (NDA)
+Plot function for Network-based Dimensionality Reduction and Analysis (NDA)
 }
 \description{
 Plot variable network graph

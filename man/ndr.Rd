@@ -1,9 +1,9 @@
 \name{ndr}
 \alias{ndr}
-\title{Network-based, non-parametric dimensionality reduction and analysis
+\title{Network-based Dimensionality Reduction and Analysis (NDA)
 }
 \description{
-Network-based dimensionality reduction and analysis.
+Network-based Dimensionality Reduction and Analysis (NDA).
 }
 \usage{
 ndr(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,null_modell_type=4,

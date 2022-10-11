@@ -2,7 +2,7 @@
 \alias{summary.nda}
 
 \title{
-Summary function of Network-based, non-parametric dimensionality reduction and analysis (NDA)
+Summary function of Network-based Dimensionality Reduction and Analysis (NDA)
 }
 \description{
 Print summary of Network-based, non-parametric dimensionality reduction and analysis (NDA)

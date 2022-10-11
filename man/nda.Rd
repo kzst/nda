@@ -2,10 +2,10 @@
 \alias{nda}
 \docType{package}
 
-\title{Package of Network-based Dimensionality reduction and Analysis}
+\title{Package of Network-based Dimensionality Reduction and Analyses}
 
 \description{
-Network-based Dimensionality reduction and Analysis. Biplot function.
+Network-based Dimensionality Reduction and Analysis. Biplot function.
 }
 
 \seealso{\code{\link{ndr}}, \code{\link{plot}}, \code{\link{biplot}}, \code{\link{summary}}, \code{\link{dCor}}.}

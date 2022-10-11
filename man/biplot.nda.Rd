@@ -1,10 +1,10 @@
 \name{biplot.nda}
 \alias{biplot.nda}
 \title{
-Biplot function for Network-based, non-parametric dimensionality reduction and analysis (NDA)
+Biplot function for Network-based Dimensionality Reduction and Analysis (NDA)
 }
 \description{
-Biplot function for Network-based, non-parametric dimensionality reduction and analysis (NDA)
+Biplot function for Network-based Dimensionality Reduction and Analysis (NDA)
 }
 \usage{
 \method{biplot}{nda}(x, main=NULL,...)

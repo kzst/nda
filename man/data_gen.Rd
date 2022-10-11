@@ -4,7 +4,7 @@
 \title{Generate random block matrix for NDA
 }
 
-\description{Generate random block matrix for NDA
+\description{Generate random block matrix for Network-based Dimensionality Reduction and Analysis (NDA)
 }
 
 \usage{

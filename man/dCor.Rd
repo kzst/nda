@@ -3,7 +3,7 @@
 \title{Calculating distance correlation of two vectors or columns of a matrix
 }
 
-\description{Calculating distance correlation of two vectors or columns of a matrix for NDA.
+\description{Calculating distance correlation of two vectors or columns of a matrix for Network-based Dimensionality Reduction and Analysis (NDA).
 
 The calculation is very slow for large matrices!
 }

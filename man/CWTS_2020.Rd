@@ -5,7 +5,7 @@
 CWTS Leiden's 2020 dataset, where the data frame has 1176 observations of 42 variables.
 }
 \description{
-Sample datasets for Network-based, non-parametric dimensionality reduction and analysis (NDA)
+Sample datasets for Network-based Dimensionality Reduction and Analysis (NDA)
 
 CWTS Leiden's 2020 dataset, where the data frame has 1176 observations of 42 variables.
 }
