@@ -15,6 +15,7 @@ Biplot function for Network-based Dimensionality Reduction and Analysis (NDA)
   \item{...}{other graphical parameters.}
 }
 
+\value{No return value}
 
 \author{
 Zsolt T. Kosztyan*, Marcell T. Kurbucz, Attila I. Katona

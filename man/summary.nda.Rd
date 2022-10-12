@@ -17,6 +17,8 @@ Print summary of Network-based, non-parametric dimensionality reduction and anal
   \item{...}{additional arguments affecting the summary produced.}
 }
 
+\value{No return value}
+
 \author{
 Zsolt T. Kosztyan*, Marcell T. Kurbucz, Attila I. Katona
 
@@ -25,7 +27,6 @@ e-mail*: kzst@gtk.uni-pannon.hu
 
 
 \seealso{\code{\link{biplot}}, \code{\link{plot}}, \code{\link{ndr}}.}
-
 
 \examples{
 # Example of summary function of NDA without feature selection

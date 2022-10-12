@@ -15,6 +15,8 @@ Plot variable network graph
   \item{...}{other graphical parameters.}
 }
 
+\value{No return value}
+
 \author{
 Zsolt T. Kosztyan*, Marcell T. Kurbucz, Attila I. Katona
 
@@ -45,5 +47,6 @@ plot(p)
 plot(p,cuts=0.6)
 
 }
+
 \keyword{multivariate}
 \concept{control chart}
