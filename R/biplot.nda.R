@@ -23,11 +23,10 @@ biplot.nda <- function(x, main=NULL,...){
       call. = FALSE
     )
   }
-  oldw <- getOption("warn")
-  options(warn = -1)
   if ("nda" %in% class(x)){
+    oldpar<-graphics::par(no.readonly = TRUE)
+    on.exit(graphics::par(oldpar))
     graphics::par(mfrow=c(x$factors,x$factors))
-    # op <- par(pty = "s")
     op <- graphics::par(mar = rep(2.0,4))
     if(!is.null(main))
       op <- c(op, graphics::par(mar = graphics::par("mar")+c(0,0,1,0)))
@@ -47,7 +46,6 @@ biplot.nda <- function(x, main=NULL,...){
   }else{
     stats::biplot(x,main,...)
   }
-  options(warn = oldw)
 }
 
 

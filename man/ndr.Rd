@@ -6,12 +6,12 @@
 Network-based Dimensionality Reduction and Analysis (NDA).
 }
 \usage{
-ndr(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,null_modell_type=4,
+ndr(r,cor_method=1,min_R=0,min_comm=2,Gamma=1,null_modell_type=4,
 mod_mode=6,min_evalue=0,min_communality=0,com_communalities=0,use_rotation)
 
 }
 \arguments{
-  \item{data}{A numeric data frame}
+  \item{r}{A numeric data frame}
   \item{cor_method}{Correlation method (optional).
 '1' Pearson's correlation (default),
 '2' Spearman's correlation, '3' Kendall's correlation,
@@ -38,6 +38,11 @@ NDA both works on low and high simple size datasets. If min_evalue=min_communali
 \item{scores}{Estimates of the factor scores are reported}
 \item{n.obs}{Number of observations specified or found}
 \item{fn}{NDA}
+\item{Call}{Callback function}
+}
+
+\references{
+Kosztyan, Z. T., Kurbucz, M. T., & Katona, A. I. (2022). Network-based dimensionality reduction of high-dimensional, low-sample-size datasets. Knowledge-Based Systems, 109180. doi:10.1016/j.knosys.2022.109180
 }
 
 \author{

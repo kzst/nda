@@ -25,11 +25,10 @@ biplot.nda <- function(x, main=NULL,...){
       call. = FALSE
     )
   }
-  oldw <- getOption("warn")
-  options(warn = -1)
   if ("nda" %in% class(x)){
+    oldpar<-graphics::par(no.readonly = TRUE)
+    on.exit(graphics::par(oldpar))
     graphics::par(mfrow=c(x$factors,x$factors))
-    # op <- par(pty = "s")
     op <- graphics::par(mar = rep(2.0,4))
     if(!is.null(main))
       op <- c(op, graphics::par(mar = graphics::par("mar")+c(0,0,1,0)))
@@ -49,7 +48,6 @@ biplot.nda <- function(x, main=NULL,...){
   }else{
     stats::biplot(x,main,...)
   }
-  options(warn = oldw)
 }
 
 # DATA GENERATION FOR NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (NDA) #
@@ -132,11 +130,11 @@ dCor<-function(x,y=NULL){
 
 ########### NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (NDA) ###########
 
-ndr<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,
+ndr<-function(r,cor_method=1,min_R=0,min_comm=2,Gamma=1,
               null_modell_type=4,mod_mode=6,min_evalue=0,
               min_communality=0,com_communalities=0,use_rotation=FALSE){
 
-
+  cl<-match.call()
   if (!requireNamespace("energy", quietly = TRUE)) {
     stop(
       "Package \"energy\" must be installed to use this function.",
@@ -167,8 +165,8 @@ ndr<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,
       call. = FALSE
     )
   }
-  DATA<-data
-  X<-data
+  DATA<-r
+  X<-r
 
   # Prepare correlation matrix
 
@@ -246,9 +244,9 @@ ndr<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,
     M<-M[-1]
   }
 
-  data<-X;
-  is.na(data)<-sapply(data, is.infinite)
-  data[is.na(data)]<-0
+  r<-X;
+  is.na(r)<-sapply(r, is.infinite)
+  r[is.na(r)]<-0
 
   # Feature selection (1) - Drop peripheric items
 
@@ -264,16 +262,16 @@ ndr<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,
       R[Coordsi,Coordsi], mode = "undirected",
       weighted = TRUE, diag = FALSE))$vector)
     if ((nrow(as.matrix(EVC[EVC>min_evalue]))>2)&(nrow(EVC)>2)){
-      L[,i]<-as.matrix(rowSums(data[,
-                                    Coordsi[EVC>min_evalue]] * EVC[EVC>min_evalue]))
+      L[,i]<-as.matrix(rowSums(r[,
+                                 Coordsi[EVC>min_evalue]] * EVC[EVC>min_evalue]))
       coords[Coordsi[EVC<=min_evalue]]<-0
       coords[Coordsi[EVC<=min_evalue]]<-0
       S[Coordsi[EVC<=min_evalue]]<-0
     }else{
-      L[,i]<-as.matrix(rowSums(data[,Coordsi] * EVC))
+      L[,i]<-as.matrix(rowSums(r[,Coordsi] * EVC))
     }
     EVCs[[i]]=EVC[EVC>min_evalue]
-    DATAs[[i]]=data[,S==M[i]];
+    DATAs[[i]]=r[,S==M[i]];
   }
 
   if (ncol(L)>1 && use_rotation==TRUE){
@@ -291,10 +289,10 @@ ndr<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,
   )
   LOADING=switch(
     cor_method,
-    "1"=stats::cor(data[,S>0],L),
-    "2"=stats::cor(data[,S>0],L,method="spearman"),
-    "3"=stats::cor(data[,S>0],L,method="kendall"),
-    "4"=dCor(data[,S>0],L)
+    "1"=stats::cor(r[,S>0],L),
+    "2"=stats::cor(r[,S>0],L,method="spearman"),
+    "3"=stats::cor(r[,S>0],L,method="kendall"),
+    "4"=dCor(r[,S>0],L)
   )
   COMMUNALITY<-t(apply(LOADING^2,1,max))
 
@@ -323,10 +321,10 @@ ndr<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,
         EVC<-EVCs[[i]]
         EVC<-EVC[COM>min_communality]
         EVCs[[i]]<-EVC
-        L[,i]<-as.matrix(rowSums(data[,Coordsi[COM>min_communality]] * EVC))
+        L[,i]<-as.matrix(rowSums(r[,Coordsi[COM>min_communality]] * EVC))
       }else{
         EVC<-EVCs[[i]]
-        L[,i]<-as.matrix(rowSums(data[,Coordsi] * EVC))
+        L[,i]<-as.matrix(rowSums(r[,Coordsi] * EVC))
       }
     }
     if (ncol(L)>1 && use_rotation==TRUE){
@@ -343,10 +341,10 @@ ndr<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,
     )
     LOADING=switch(
       cor_method,
-      "1"=stats::cor(data[,S>0],L),
-      "2"=stats::cor(data[,S>0],L,method="spearman"),
-      "3"=stats::cor(data[,S>0],L,method="kendall"),
-      "4"=dCor(data[,S>0],L)
+      "1"=stats::cor(r[,S>0],L),
+      "2"=stats::cor(r[,S>0],L,method="spearman"),
+      "3"=stats::cor(r[,S>0],L,method="kendall"),
+      "4"=dCor(r[,S>0],L)
     )
     COMMUNALITY<-t(apply(LOADING^2,1,max))
   }
@@ -395,9 +393,9 @@ ndr<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,
         weighted = TRUE, diag = FALSE))$vector)
       EVCs[[i]]<-EVC
       result<-NA
-      try(result <- as.matrix(rowSums(data[,Coordsi] %*% EVC)),silent=TRUE)
+      try(result <- as.matrix(rowSums(r[,Coordsi] %*% EVC)),silent=TRUE)
       if (is.null(nrow(is.nan(result)))){
-        try(result <- as.matrix(rowSums(data[,Coordsi] * EVC)),silent=TRUE)
+        try(result <- as.matrix(rowSums(r[,Coordsi] * EVC)),silent=TRUE)
       }
       L[,i]<-result
     }
@@ -415,10 +413,10 @@ ndr<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,
     )
     LOADING=switch(
       cor_method,
-      "1"=stats::cor(data[,S>0],L),
-      "2"=stats::cor(data[,S>0],L,method="spearman"),
-      "3"=stats::cor(data[,S>0],L,method="kendall"),
-      "4"=dCor(data[,S>0],L)
+      "1"=stats::cor(r[,S>0],L),
+      "2"=stats::cor(r[,S>0],L,method="spearman"),
+      "3"=stats::cor(r[,S>0],L,method="kendall"),
+      "4"=dCor(r[,S>0],L)
     )
     COMMUNALITY<-t(apply(LOADING^2,1,max))
   }
@@ -436,6 +434,7 @@ ndr<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,
   P$R<-R
   P$membership<-S
   P$fn<-"NDA"
+  P$Call<-cl
   class(P) <- "nda"
   return(P)
 }
@@ -533,4 +532,152 @@ summary.nda <- function(object,  digits =  getOption("digits"), ...) {
   }else{
     summary(object,...)
   }
+}
+
+######### Feature selection for KMO #######
+
+fs.KMO<-function(data,min_MSA=0.5,cor.mtx=FALSE){
+  if (!requireNamespace("psych", quietly = TRUE)) {
+    stop(
+      "Package \"psych\" must be installed to use this function.",
+      call. = FALSE
+    )
+  }
+  if (is.data.frame(data)|is.matrix(data)){
+    if (ncol(data)>=2){
+      x<-data
+      loop=TRUE
+      while(loop==TRUE){
+        kmo<-psych::KMO(x)
+        if (min(kmo$MSAi)>min_MSA){loop=FALSE}else{
+          i<-which.min(kmo$MSAi)
+          if (cor.mtx==TRUE){
+            x<-x[-i,-i]
+          }else{
+            x<-x[,-i]
+          }
+        }
+        if (ncol(x)<2){
+          loop=FALSE
+        }
+      }
+      return(x)
+    }else{
+      stop("Error: data must contain at least 2 columns!")
+      step.KMO<-NULL
+      return(step.KMO)
+    }
+  }else{
+    stop("Error: data must be a matrix or a dataframe!")
+    step.KMO<-NULL
+    return(step.KMO)
+  }
+}
+
+######### Feature selection for PCA/FA/NDA #######
+
+fs.dimred<-function(fn,DF,min_comm=0.25,com_comm=0.25){
+  if (!requireNamespace("psych", quietly = TRUE)) {
+    stop(
+      "Package \"psych\" must be installed to use this function.",
+      call. = FALSE
+    )
+  }
+  s<-deparse(fn$Call)
+  p<-fn
+  v<-as.character(fn$Call)
+  if (length(v)<2){stop(
+    "Callback must be at least two elements!",
+    call. = FALSE
+  )}
+  s<-gsub(v[2],"DF",s,fixed=TRUE) # replace dataset name to "DF"
+  if ("principal" %in% as.character(fn$Call)) {
+    s<-paste("psych::",s,sep = "") # works with psych functions
+  }else{
+    if ("fa" %in% as.character(fn$Call)) {
+      s<-paste("psych::",s,sep = "") # works with psych functions
+    }else{
+      if ("ndr" %in% as.character(fn$Call)) {
+        s<-paste("nda::",s,sep = "") # works with nda functions
+      }else{stop(
+        "Feature selection only works with principal, fa, and ndr functions!",
+        call. = FALSE
+      )}
+    }
+  }
+  dropped_low<-NULL
+  loop=TRUE
+  while(loop==TRUE){ # Drop low communality values
+    p<-eval(str2lang(s))
+    if (is.null(p$communality)==TRUE){loop=FALSE}else{
+      if (min(p$communality)>=min_comm){loop=FALSE}else{
+        i<-which.min(p$communality)
+        if (is.null(p$scores)==TRUE){
+          DF<-DF[-i,-i] # there is no score value => correlation matrix is
+          #investigated
+        }else{
+          if (is.null(dropped_low)==TRUE){
+            dropped_low<-eval(str2lang(paste("as.",class(DF[1]),"(DF[,i])",sep="")))
+            names(dropped_low)[1]<-names(DF)[i]
+          }else{
+            dropped_low<-cbind(dropped_low,DF[i])
+          }
+          DF<-DF[,-i]
+        }
+      }
+    }
+    if (ncol(DF)<3){
+      loop=FALSE
+    }
+  }
+  dropped_com<-NULL
+  repeat{
+    p<-eval(str2lang(s))
+    if (is.null(p$communality)==TRUE){
+      break
+    }else{
+      if (is.null(p$loadings)==TRUE){
+        break
+      }else{
+        if (ncol(p$loadings)<2){
+          loop=FALSE
+        }else{
+          l<-abs(p$loadings)
+          c<-matrix(0,ncol=1,nrow=nrow(l))
+          for (i in 1:nrow(l)){
+            r<-l[i,]
+            m1<-max(r) # highest loading value
+            m2<-max(r[-which.max(r)]) # 2nd highest loading value
+            if ((m1<2*m2)&(m1<(m2+com_comm))){
+              c[i]<-1
+            }
+          }
+          if (sum(c)<1){
+            break
+          }
+        }
+        sel<-setdiff(as.vector(c*1:nrow(as.matrix(p$communality))),0)
+        i<-sel[which.min(p$communality[sel])]
+        if (is.null(p$scores)==TRUE){
+          DF<-DF[-i,-i] # there is no score value => correlation matrix is
+          #investigated
+        }else{
+          if (is.null(dropped_com)==TRUE){
+            dropped_com<-eval(str2lang(paste("as.",class(DF)[1],"(DF[,i])",sep="")))
+            names(dropped_com)[1]<-names(DF)[i]
+          }else{
+            dropped_com<-cbind(dropped_com,DF[i])
+          }
+          DF<-DF[,-i]
+        }
+      }
+    }
+    if (ncol(DF)<3){
+      break
+    }
+  }
+  p$dropped_low<-dropped_low
+  p$dropped_com<-dropped_com
+  p$retained_DF<-DF
+  return(p)
 }

@@ -12,11 +12,11 @@
 
 #' @export
 
-ndr<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,
+ndr<-function(r,cor_method=1,min_R=0,min_comm=2,Gamma=1,
               null_modell_type=4,mod_mode=6,min_evalue=0,
               min_communality=0,com_communalities=0,use_rotation=FALSE){
 
-
+  cl<-match.call()
   if (!requireNamespace("energy", quietly = TRUE)) {
     stop(
       "Package \"energy\" must be installed to use this function.",
@@ -47,8 +47,8 @@ ndr<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,
       call. = FALSE
     )
   }
-  DATA<-data
-  X<-data
+  DATA<-r
+  X<-r
 
   # Prepare correlation matrix
 
@@ -126,9 +126,9 @@ ndr<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,
     M<-M[-1]
   }
 
-  data<-X;
-  is.na(data)<-sapply(data, is.infinite)
-  data[is.na(data)]<-0
+  r<-X;
+  is.na(r)<-sapply(r, is.infinite)
+  r[is.na(r)]<-0
 
   # Feature selection (1) - Drop peripheric items
 
@@ -144,16 +144,16 @@ ndr<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,
       R[Coordsi,Coordsi], mode = "undirected",
         weighted = TRUE, diag = FALSE))$vector)
     if ((nrow(as.matrix(EVC[EVC>min_evalue]))>2)&(nrow(EVC)>2)){
-      L[,i]<-as.matrix(rowSums(data[,
+      L[,i]<-as.matrix(rowSums(r[,
         Coordsi[EVC>min_evalue]] * EVC[EVC>min_evalue]))
       coords[Coordsi[EVC<=min_evalue]]<-0
       coords[Coordsi[EVC<=min_evalue]]<-0
       S[Coordsi[EVC<=min_evalue]]<-0
     }else{
-      L[,i]<-as.matrix(rowSums(data[,Coordsi] * EVC))
+      L[,i]<-as.matrix(rowSums(r[,Coordsi] * EVC))
     }
     EVCs[[i]]=EVC[EVC>min_evalue]
-    DATAs[[i]]=data[,S==M[i]];
+    DATAs[[i]]=r[,S==M[i]];
   }
 
   if (ncol(L)>1 && use_rotation==TRUE){
@@ -171,10 +171,10 @@ ndr<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,
   )
   LOADING=switch(
     cor_method,
-    "1"=stats::cor(data[,S>0],L),
-    "2"=stats::cor(data[,S>0],L,method="spearman"),
-    "3"=stats::cor(data[,S>0],L,method="kendall"),
-    "4"=dCor(data[,S>0],L)
+    "1"=stats::cor(r[,S>0],L),
+    "2"=stats::cor(r[,S>0],L,method="spearman"),
+    "3"=stats::cor(r[,S>0],L,method="kendall"),
+    "4"=dCor(r[,S>0],L)
   )
   COMMUNALITY<-t(apply(LOADING^2,1,max))
 
@@ -203,10 +203,10 @@ ndr<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,
         EVC<-EVCs[[i]]
         EVC<-EVC[COM>min_communality]
         EVCs[[i]]<-EVC
-        L[,i]<-as.matrix(rowSums(data[,Coordsi[COM>min_communality]] * EVC))
+        L[,i]<-as.matrix(rowSums(r[,Coordsi[COM>min_communality]] * EVC))
       }else{
         EVC<-EVCs[[i]]
-        L[,i]<-as.matrix(rowSums(data[,Coordsi] * EVC))
+        L[,i]<-as.matrix(rowSums(r[,Coordsi] * EVC))
       }
     }
     if (ncol(L)>1 && use_rotation==TRUE){
@@ -223,10 +223,10 @@ ndr<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,
     )
     LOADING=switch(
       cor_method,
-      "1"=stats::cor(data[,S>0],L),
-      "2"=stats::cor(data[,S>0],L,method="spearman"),
-      "3"=stats::cor(data[,S>0],L,method="kendall"),
-      "4"=dCor(data[,S>0],L)
+      "1"=stats::cor(r[,S>0],L),
+      "2"=stats::cor(r[,S>0],L,method="spearman"),
+      "3"=stats::cor(r[,S>0],L,method="kendall"),
+      "4"=dCor(r[,S>0],L)
     )
     COMMUNALITY<-t(apply(LOADING^2,1,max))
   }
@@ -275,9 +275,9 @@ ndr<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,
           weighted = TRUE, diag = FALSE))$vector)
       EVCs[[i]]<-EVC
       result<-NA
-      try(result <- as.matrix(rowSums(data[,Coordsi] %*% EVC)),silent=TRUE)
+      try(result <- as.matrix(rowSums(r[,Coordsi] %*% EVC)),silent=TRUE)
       if (is.null(nrow(is.nan(result)))){
-        try(result <- as.matrix(rowSums(data[,Coordsi] * EVC)),silent=TRUE)
+        try(result <- as.matrix(rowSums(r[,Coordsi] * EVC)),silent=TRUE)
       }
       L[,i]<-result
     }
@@ -295,10 +295,10 @@ ndr<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,
     )
     LOADING=switch(
       cor_method,
-      "1"=stats::cor(data[,S>0],L),
-      "2"=stats::cor(data[,S>0],L,method="spearman"),
-      "3"=stats::cor(data[,S>0],L,method="kendall"),
-      "4"=dCor(data[,S>0],L)
+      "1"=stats::cor(r[,S>0],L),
+      "2"=stats::cor(r[,S>0],L,method="spearman"),
+      "3"=stats::cor(r[,S>0],L,method="kendall"),
+      "4"=dCor(r[,S>0],L)
     )
     COMMUNALITY<-t(apply(LOADING^2,1,max))
   }
@@ -316,6 +316,7 @@ ndr<-function(data,cor_method=1,min_R=0,min_comm=2,Gamma=1,
   P$R<-R
   P$membership<-S
   P$fn<-"NDA"
+  P$Call<-cl
   class(P) <- "nda"
   return(P)
 }
