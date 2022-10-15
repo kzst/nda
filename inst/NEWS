@@ -1,8 +1,12 @@
 Version 0.1.7
 
    o fixed some bugs
+<<<<<<< HEAD
    o Feature Selection for KMO/MSA
    o Feature Selection for PCA/FA
+=======
+   o Feature Selection for KMO/MSA
+>>>>>>> f16cf31a08b36536137b862845015c4923264d69
 
 Version 0.1.6
 

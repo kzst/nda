@@ -6,5 +6,8 @@ S3method(summary,nda)
 export(dCor)
 export(data_gen)
 export(fs.KMO)
+<<<<<<< HEAD
 export(fs.dimred)
+=======
+>>>>>>> f16cf31a08b36536137b862845015c4923264d69
 export(ndr)

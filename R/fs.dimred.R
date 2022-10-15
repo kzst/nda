@@ -12,7 +12,11 @@
 
 #' @export
 
+<<<<<<< HEAD
 fs.dimred<-function(fn,DF,min_comm=0.25,com_comm=0.25){
+=======
+fs.dimred<-function(fn,data,min_comm=0.25){
+>>>>>>> f16cf31a08b36536137b862845015c4923264d69
   if (!requireNamespace("psych", quietly = TRUE)) {
     stop(
       "Package \"psych\" must be installed to use this function.",
@@ -20,6 +24,7 @@ fs.dimred<-function(fn,DF,min_comm=0.25,com_comm=0.25){
     )
   }
   s<-deparse(fn$Call)
+<<<<<<< HEAD
   p<-fn
   v<-as.character(fn$Call)
   if (length(v)<2){stop(
@@ -115,5 +120,25 @@ fs.dimred<-function(fn,DF,min_comm=0.25,com_comm=0.25){
   p$dropped_low<-dropped_low
   p$dropped_com<-dropped_com
   p$retained_DF<-DF
+=======
+  p<-NULL
+  v<-as.character(fn$Call)
+  if (length(v)>1){
+    s<-gsub(v[2],"data",s) # replace dataset name to "data"
+    s<-paste("psych::",s,sep = "") # works wit psych functions
+  }else{
+    stop(
+      "Callback must be at least two elements!",
+      call. = FALSE
+    )
+  }
+  if ("principal" %in% as.character(fn$Call)) {
+    p<-eval(str2lang(s))
+  }else{
+    if ("fa" %in% as.character(fn$Call)) {
+      p<-eval(str2lang(s))
+    }
+  }
+>>>>>>> f16cf31a08b36536137b862845015c4923264d69
   return(p)
 }

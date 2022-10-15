@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Package: nda
 Type: Package
 Title: Network-Based Dimensionality Reduction and Analysis
@@ -24,3 +25,31 @@ Imports:
     Matrix,
     visNetwork
 RoxygenNote: 7.2.0
+=======
+Package: nda
+Type: Package
+Title: Network-Based Dimensionality Reduction and Analysis
+Version: 0.1.7
+Authors@R: c(
+    person("Zsolt T.", "Kosztyan", email="kosztyan.zsolt@gtk.uni-pannon.hu", role = c("aut", "cre")),
+    person("Marcell T.", "Kurbucz", email="kurbuczmarcell@gtk.uni-pannon.hu", role = c("aut")),
+    person("Attila I.", "Katona", email="katona.attila@gtk.uni-pannon.hu", role = c("aut"))
+    )
+Maintainer: Zsolt T. Kosztyan <kosztyan.zsolt@gtk.uni-pannon.hu>
+Description: Network-Based Dimensionality Reduction and Analysis. Reduction with and without feature selection. Plot functions. Kosztyan et. al. (2022) <doi:10.1016/j.knosys.2022.109180>.
+License: GPL (>= 2)
+Encoding: UTF-8
+LazyData: true
+URL: https://github.com/kzst/nda
+Depends: 
+    R (>= 3.10)
+Imports: 
+    leidenAlg,
+    energy,
+    psych, 
+    stats,
+    igraph,
+    Matrix,
+    visNetwork
+RoxygenNote: 7.2.0
+>>>>>>> f16cf31a08b36536137b862845015c4923264d69

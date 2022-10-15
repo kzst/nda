@@ -21,10 +21,16 @@ fs.KMO<-function(data,min_MSA=0.5,cor.mtx=FALSE){
   if (is.data.frame(data)|is.matrix(data)){
     if (ncol(data)>=2){
       x<-data
+<<<<<<< HEAD
       loop=TRUE
       while(loop==TRUE){
         kmo<-psych::KMO(x)
         if (min(kmo$MSAi)>min_MSA){loop=FALSE}else{
+=======
+      repeat{
+        kmo<-psych::KMO(x)
+        if (min(kmo$MSAi)>min_MSA){break}else{
+>>>>>>> f16cf31a08b36536137b862845015c4923264d69
           i<-which.min(kmo$MSAi)
           if (cor.mtx==TRUE){
             x<-x[-i,-i]
@@ -32,9 +38,13 @@ fs.KMO<-function(data,min_MSA=0.5,cor.mtx=FALSE){
             x<-x[,-i]
           }
         }
+<<<<<<< HEAD
         if (ncol(x)<2){
           loop=FALSE
         }
+=======
+        if (ncol(x)<2){break}
+>>>>>>> f16cf31a08b36536137b862845015c4923264d69
       }
       return(x)
     }else{
