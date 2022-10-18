@@ -1,9 +1,13 @@
+Version 0.1.8
+
+   o fixed some bugs
+   o works with correlation or symmetric distance matrices
+
 Version 0.1.7
 
    o fixed some bugs
-   o Feature Selection for KMO/MSA
-   o Feature Selection for PCA/FA
-   o Feature Selection for KMO/MSA
+   o feature selection for KMO/MSA
+   o feature selection for PCA/FA/NDA
 
 Version 0.1.6
 

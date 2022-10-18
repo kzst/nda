@@ -12,7 +12,7 @@
 
 #' @export
 
-ndr<-function(r,cor_method=1,min_R=0,min_comm=2,Gamma=1,
+ndr<-function(r,covar=FALSE,cor_method=1,min_R=0,min_comm=2,Gamma=1,
               null_modell_type=4,mod_mode=6,min_evalue=0,
               min_communality=0,com_communalities=0,use_rotation=FALSE){
 
@@ -52,13 +52,17 @@ ndr<-function(r,cor_method=1,min_R=0,min_comm=2,Gamma=1,
 
   # Prepare correlation matrix
 
-  COR=switch(
-    cor_method,
-    "1"=stats::cor(X),
-    "2"=stats::cor(X,method="spearman"),
-    "3"=stats::cor(X,method="kendall"),
-    "4"=dCor(X)
-  )
+  if (covar==FALSE){
+    COR=switch(
+      cor_method,
+      "1"=stats::cor(X),
+      "2"=stats::cor(X,method="spearman"),
+      "3"=stats::cor(X,method="kendall"),
+      "4"=dCor(X)
+    )
+  }else{
+    COR<-X
+  }
   COR[is.na(COR)]<-0
   R<-COR^2
   remove(COR)
@@ -109,7 +113,7 @@ ndr<-function(r,cor_method=1,min_R=0,min_comm=2,Gamma=1,
 
   S<-as.numeric(modular$membership)
 
-  igraph::sizes(modular)
+  # igraph::sizes(modular)
 
   for (i in 1: max(S)){
     if (nrow(as.matrix(coords[S==i]))<min_comm){
@@ -126,18 +130,18 @@ ndr<-function(r,cor_method=1,min_R=0,min_comm=2,Gamma=1,
     M<-M[-1]
   }
 
-  r<-X;
-  is.na(r)<-sapply(r, is.infinite)
-  r[is.na(r)]<-0
-
+  if (covar==FALSE){
+    r<-X;
+    is.na(r)<-sapply(r, is.infinite)
+    r[is.na(r)]<-0
+  }
   # Feature selection (1) - Drop peripheric items
 
   Coords<-c(1:nrow(as.matrix(S)))
-  L<-matrix(0,nrow(DATA),nrow(as.matrix(M)))
+  L<-matrix(0,nrow(DATA),nrow(as.matrix(M))) # Factor scores
 
   EVCs<-list()
   DATAs<-list()
-
   for (i in 1:nrow(as.matrix(M))){
     Coordsi<-Coords[(S==M[i])&(coords==1)]
     EVC<-as.matrix(igraph::eigen_centrality(igraph::graph.adjacency(
@@ -155,7 +159,6 @@ ndr<-function(r,cor_method=1,min_R=0,min_comm=2,Gamma=1,
     EVCs[[i]]=EVC[EVC>min_evalue]
     DATAs[[i]]=r[,S==M[i]];
   }
-
   if (ncol(L)>1 && use_rotation==TRUE){
     L<-psych::principal(L,nfactors = dim(L)[2])$scores
   }else{
@@ -169,13 +172,24 @@ ndr<-function(r,cor_method=1,min_R=0,min_comm=2,Gamma=1,
     "3"=stats::cor(L,method="kendall"),
     "4"=dCor(L)
   )
-  LOADING=switch(
-    cor_method,
-    "1"=stats::cor(r[,S>0],L),
-    "2"=stats::cor(r[,S>0],L,method="spearman"),
-    "3"=stats::cor(r[,S>0],L,method="kendall"),
-    "4"=dCor(r[,S>0],L)
-  )
+  CoordsS<-Coords[S!=0]
+  CoordsC<-c(1:nrow(as.matrix(CoordsS)))
+  if (covar==FALSE){
+    LOADING=switch(
+      cor_method,
+      "1"=stats::cor(r[,S>0],L),
+      "2"=stats::cor(r[,S>0],L,method="spearman"),
+      "3"=stats::cor(r[,S>0],L,method="kendall"),
+      "4"=dCor(r[,S>0],L)
+    )
+  }else{
+    LOADING<-matrix(0,length(S),nrow(as.matrix(M))) # Factor scores
+    for (i in 1:nrow(as.matrix(M))){
+      LOADING[Coords[S==i],i]<-EVCs[[i]]
+    }
+    LOADING<-LOADING[-Coords[S==0],]
+    rownames(LOADING)<-names(as.data.frame(r))[S>0]
+  }
   COMMUNALITY<-t(apply(LOADING^2,1,max))
 
   # Feature selection (2) - Drop items with low communality
@@ -221,13 +235,22 @@ ndr<-function(r,cor_method=1,min_R=0,min_comm=2,Gamma=1,
       "3"=stats::cor(L,method="kendall"),
       "4"=dCor(L)
     )
-    LOADING=switch(
-      cor_method,
-      "1"=stats::cor(r[,S>0],L),
-      "2"=stats::cor(r[,S>0],L,method="spearman"),
-      "3"=stats::cor(r[,S>0],L,method="kendall"),
-      "4"=dCor(r[,S>0],L)
-    )
+    if (covar==FALSE){
+      LOADING=switch(
+        cor_method,
+        "1"=stats::cor(r[,S>0],L),
+        "2"=stats::cor(r[,S>0],L,method="spearman"),
+        "3"=stats::cor(r[,S>0],L,method="kendall"),
+        "4"=dCor(r[,S>0],L)
+      )
+    }else{
+      LOADING<-matrix(0,length(S),nrow(as.matrix(M))) # Factor scores
+      for (i in 1:nrow(as.matrix(M))){
+        LOADING[Coords[S==i],i]<-EVCs[[i]]
+      }
+      LOADING<-LOADING[-Coords[S==0],]
+      rownames(LOADING)<-names(as.data.frame(r))[S>0]
+    }
     COMMUNALITY<-t(apply(LOADING^2,1,max))
   }
 
@@ -293,13 +316,22 @@ ndr<-function(r,cor_method=1,min_R=0,min_comm=2,Gamma=1,
       "3"=stats::cor(L,method="kendall"),
       "4"=dCor(L)
     )
-    LOADING=switch(
-      cor_method,
-      "1"=stats::cor(r[,S>0],L),
-      "2"=stats::cor(r[,S>0],L,method="spearman"),
-      "3"=stats::cor(r[,S>0],L,method="kendall"),
-      "4"=dCor(r[,S>0],L)
-    )
+    if (covar==FALSE){
+      LOADING=switch(
+        cor_method,
+        "1"=stats::cor(r[,S>0],L),
+        "2"=stats::cor(r[,S>0],L,method="spearman"),
+        "3"=stats::cor(r[,S>0],L,method="kendall"),
+        "4"=dCor(r[,S>0],L)
+      )
+    }else{
+      LOADING<-matrix(0,length(S),nrow(as.matrix(M))) # Factor scores
+      for (i in 1:nrow(as.matrix(M))){
+        LOADING[Coords[S==i],i]<-EVCs[[i]]
+      }
+      LOADING<-LOADING[-Coords[S==0],]
+      rownames(LOADING)<-names(as.data.frame(r))[S>0]
+    }
     COMMUNALITY<-t(apply(LOADING^2,1,max))
   }
 
@@ -309,9 +341,11 @@ ndr<-function(r,cor_method=1,min_R=0,min_comm=2,Gamma=1,
   colnames(P$loadings)<-paste("NDA",1:nrow(as.matrix(M)),sep = "")
   P$uniqueness<-1-COMMUNALITY
   P$factors<-nrow(as.matrix(M))
-  P$scores<-L
-  rownames(P$scores)<-rownames(DATA)
-  colnames(P$scores)<-paste("NDA",1:nrow(as.matrix(M)),sep = "")
+  if (covar==FALSE){
+    P$scores<-L
+    rownames(P$scores)<-rownames(DATA)
+    colnames(P$scores)<-paste("NDA",1:nrow(as.matrix(M)),sep = "")
+  }
   P$n.obs<-nrow(DATA)
   P$R<-R
   P$membership<-S
