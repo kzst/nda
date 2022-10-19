@@ -33,9 +33,13 @@ plot.nda <- function(x,cuts=0.3,...){
     R2<-G<-nodes<-edges<-NULL
     R2<-x$R
     R2[R2<cuts]<-0
-
-    G=igraph::graph.adjacency(R2, mode = "undirected",
-                              weighted = TRUE, diag = FALSE)
+    if (isSymmetric(as.matrix(R2))){
+      G=igraph::graph.adjacency(as.matrix(R2), mode = "undirected",
+                                weighted = TRUE, diag = FALSE)
+    }else{
+      G=igraph::graph.adjacency(as.matrix(R2), mode = "directed",
+                                weighted = TRUE, diag = FALSE)
+    }
     nodes<-as.data.frame(igraph::V(G)$name)
     nodes$label<-rownames(x$R)
     nodes$color<-grDevices::hsv(x$membership/max(x$membership))

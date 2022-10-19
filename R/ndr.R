@@ -12,7 +12,7 @@
 
 #' @export
 
-ndr<-function(r,covar=FALSE,cor_method=1,min_R=0,min_comm=2,Gamma=1,
+ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
               null_modell_type=4,mod_mode=6,min_evalue=0,
               min_communality=0,com_communalities=0,use_rotation=FALSE){
 
@@ -47,24 +47,62 @@ ndr<-function(r,covar=FALSE,cor_method=1,min_R=0,min_comm=2,Gamma=1,
       call. = FALSE
     )
   }
+  if (!requireNamespace("ppcor", quietly = TRUE)) {
+    stop(
+      "Package \"ppcor\" must be installed to use this function.",
+      call. = FALSE
+    )
+  }
   DATA<-r
   X<-r
 
   # Prepare correlation matrix
 
   if (covar==FALSE){
-    COR=switch(
-      cor_method,
-      "1"=stats::cor(X),
-      "2"=stats::cor(X,method="spearman"),
-      "3"=stats::cor(X,method="kendall"),
-      "4"=dCor(X)
-    )
+    if (cor_type==1){ # Bivariate correlations
+      COR=switch(
+        cor_method,
+        "1"=stats::cor(X),
+        "2"=stats::cor(X,method="spearman"),
+        "3"=stats::cor(X,method="kendall"),
+        "4"=dCor(X)
+      )
+    }else{
+      if (cor_type==2){ # Partial correlations
+        COR=switch(
+          cor_method,
+          "1"=ppcor::pcor(X)$estimate,
+          "2"=ppcor::pcor(X,method="spearman")$estimate,
+          "3"=ppcor::pcor(X,method="kendall")$estimate,
+          "4"=pdCor(X)
+        )
+      }else{ # Semi-partial correlations
+        COR=switch(
+          cor_method,
+          "1"=ppcor::spcor(X)$estimate,
+          "2"=ppcor::spcor(X,method="spearman")$estimate,
+          "3"=ppcor::spcor(X,method="kendall")$estimate,
+          "4"=spdCor(X)
+        )
+      }
+    }
   }else{
     COR<-X
   }
   COR[is.na(COR)]<-0
+  issymm<-isSymmetric(as.matrix(COR))
+  if (issymm==FALSE){
+    if (mod_mode<4){
+      stop(
+        "If correlation/simmilarity matrix is non-symmetric only InfoMap/Walktrap/Leiden modularities can be used.",
+        call. = FALSE
+      )
+    }
+  }
   R<-COR^2
+  R<-as.data.frame(R)
+  colnames(R)<-colnames(r)
+  rownames(R)<-colnames(r)
   remove(COR)
 
   R<-R-diag(nrow(R))
@@ -93,23 +131,40 @@ ndr<-function(r,covar=FALSE,cor_method=1,min_R=0,min_comm=2,Gamma=1,
     "4"=R
   )
   MTX[MTX<0]<-0
-
   cor_method<-1 # Non-linear correlation only used for the correlation graph
-  modular=switch(
-    mod_mode,
-    "1"=igraph::cluster_louvain(igraph::graph.adjacency(MTX,
-              mode = "undirected", weighted = TRUE, diag = FALSE)),
-    "2"=igraph::cluster_fast_greedy(igraph::graph.adjacency(MTX,
-              mode = "undirected", weighted = TRUE, diag = FALSE)),
-    "3"=igraph::cluster_leading_eigen(igraph::graph.adjacency(MTX,
-              mode = "undirected", weighted = TRUE, diag = FALSE)),
-    "4"=igraph::cluster_infomap(igraph::graph.adjacency(MTX,
-              mode = "undirected", weighted = TRUE, diag = FALSE)),
-    "5"=igraph::cluster_walktrap(igraph::graph.adjacency(MTX,
-              mode = "undirected", weighted = TRUE, diag = FALSE)),
-    "6"=leidenAlg::leiden.community(igraph::graph.adjacency(MTX,
-              mode = "undirected", weighted = TRUE, diag = FALSE))
-  )
+  if (issymm==TRUE) {
+    modular=switch(
+      mod_mode,
+      "1"=igraph::cluster_louvain(igraph::graph.adjacency(as.matrix(MTX),
+          mode = "undirected", weighted = TRUE, diag = FALSE)),
+      "2"=igraph::cluster_fast_greedy(igraph::graph.adjacency(as.matrix(MTX),
+          mode = "undirected", weighted = TRUE, diag = FALSE)),
+      "3"=igraph::cluster_leading_eigen(igraph::graph.adjacency(as.matrix(MTX),
+          mode = "undirected", weighted = TRUE, diag = FALSE)),
+      "4"=igraph::cluster_infomap(igraph::graph.adjacency(as.matrix(MTX),
+          mode = "undirected", weighted = TRUE, diag = FALSE)),
+      "5"=igraph::cluster_walktrap(igraph::graph.adjacency(as.matrix(MTX),
+          mode = "undirected", weighted = TRUE, diag = FALSE)),
+      "6"=leidenAlg::leiden.community(igraph::graph.adjacency(as.matrix(MTX),
+          mode = "undirected", weighted = TRUE, diag = FALSE))
+    )
+  }else{
+    modular=switch(
+      mod_mode,
+      "1"=igraph::cluster_louvain(igraph::graph.adjacency(MTX,
+          mode = "directed", weighted = TRUE, diag = FALSE)),
+      "2"=igraph::cluster_fast_greedy(igraph::graph.adjacency(as.matrix(MTX),
+          mode = "directed", weighted = TRUE, diag = FALSE)),
+      "3"=igraph::cluster_leading_eigen(igraph::graph.adjacency(as.matrix(MTX),
+          mode = "directed", weighted = TRUE, diag = FALSE)),
+      "4"=igraph::cluster_infomap(igraph::graph.adjacency(as.matrix(MTX),
+          mode = "directed", weighted = TRUE, diag = FALSE)),
+      "5"=igraph::cluster_walktrap(igraph::graph.adjacency(as.matrix(MTX),
+          mode = "directed", weighted = TRUE, diag = FALSE)),
+      "6"=leidenAlg::leiden.community(igraph::graph.adjacency(as.matrix(MTX),
+          mode = "directed", weighted = TRUE, diag = FALSE))
+    )
+  }
 
   S<-as.numeric(modular$membership)
 
@@ -144,9 +199,15 @@ ndr<-function(r,covar=FALSE,cor_method=1,min_R=0,min_comm=2,Gamma=1,
   DATAs<-list()
   for (i in 1:nrow(as.matrix(M))){
     Coordsi<-Coords[(S==M[i])&(coords==1)]
+    if (issymm==TRUE) {
     EVC<-as.matrix(igraph::eigen_centrality(igraph::graph.adjacency(
-      R[Coordsi,Coordsi], mode = "undirected",
+      as.matrix(R[Coordsi,Coordsi]), mode = "undirected",
         weighted = TRUE, diag = FALSE))$vector)
+    }else{
+      EVC<-as.matrix(igraph::eigen_centrality(igraph::graph.adjacency(
+        as.matrix(R[Coordsi,Coordsi]), mode = "directed",
+        weighted = TRUE, diag = FALSE))$vector)
+    }
     if ((nrow(as.matrix(EVC[EVC>min_evalue]))>2)&(nrow(EVC)>2)){
       L[,i]<-as.matrix(rowSums(r[,
         Coordsi[EVC>min_evalue]] * EVC[EVC>min_evalue]))
@@ -293,9 +354,15 @@ ndr<-function(r,covar=FALSE,cor_method=1,min_R=0,min_comm=2,Gamma=1,
     }
     for (i in 1:nrow(as.matrix(M))){
       Coordsi=Coords[(S==M[i])&(coords==1)]
-      EVC<-as.matrix(igraph::eigen_centrality(igraph::graph.adjacency(
-        R[Coordsi,Coordsi], mode = "undirected",
+      if (issymm==TRUE) {
+        EVC<-as.matrix(igraph::eigen_centrality(igraph::graph.adjacency(
+         as.matrix(R[Coordsi,Coordsi]), mode = "undirected",
           weighted = TRUE, diag = FALSE))$vector)
+      }else{
+        EVC<-as.matrix(igraph::eigen_centrality(igraph::graph.adjacency(
+         as.matrix(R[Coordsi,Coordsi]), mode = "directed",
+          weighted = TRUE, diag = FALSE))$vector)
+      }
       EVCs[[i]]<-EVC
       result<-NA
       try(result <- as.matrix(rowSums(r[,Coordsi] %*% EVC)),silent=TRUE)

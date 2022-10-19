@@ -6,7 +6,7 @@
 Network-based Dimensionality Reduction and Analysis (NDA).
 }
 \usage{
-ndr(r,covar=FALSE,cor_method=1,min_R=0,min_comm=2,Gamma=1,null_modell_type=4,
+ndr(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,null_modell_type=4,
 mod_mode=6,min_evalue=0,min_communality=0,com_communalities=0,use_rotation)
 
 }
@@ -17,6 +17,9 @@ mod_mode=6,min_evalue=0,min_communality=0,com_communalities=0,use_rotation)
 '1' Pearson's correlation (default),
 '2' Spearman's correlation, '3' Kendall's correlation,
 '4' Distance correlation}
+  \item{cor_type}{Correlation type (optional).
+'1' Bivariate correlation (default),
+'2' partial correlation, '3' semi-partial correlations}
   \item{min_R}{Minimal square correlation between indicators (default: 0)}
   \item{min_comm}{Minimal number of indicators in a community (default: 2)}
   \item{Gamma}{Gamma parameter in multiresolution null_modell (default: 1)}
