@@ -248,7 +248,7 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
     for (i in 1:nrow(as.matrix(M))){
       LOADING[Coords[S==i],i]<-EVCs[[i]]
     }
-    LOADING<-LOADING[-Coords[S==0],]
+    LOADING<-as.matrix(LOADING[Coords[S!=0],])
     rownames(LOADING)<-names(as.data.frame(r))[S>0]
   }
   COMMUNALITY<-t(apply(LOADING^2,1,max))
@@ -309,7 +309,7 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
       for (i in 1:nrow(as.matrix(M))){
         LOADING[Coords[S==i],i]<-EVCs[[i]]
       }
-      LOADING<-LOADING[-Coords[S==0],]
+      LOADING<-as.matrix(LOADING[Coords[S!=0],])
       rownames(LOADING)<-names(as.data.frame(r))[S>0]
     }
     COMMUNALITY<-t(apply(LOADING^2,1,max))
@@ -396,7 +396,7 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
       for (i in 1:nrow(as.matrix(M))){
         LOADING[Coords[S==i],i]<-EVCs[[i]]
       }
-      LOADING<-LOADING[-Coords[S==0],]
+      LOADING<-as.matrix(LOADING[Coords[S!=0],])
       rownames(LOADING)<-names(as.data.frame(r))[S>0]
     }
     COMMUNALITY<-t(apply(LOADING^2,1,max))
