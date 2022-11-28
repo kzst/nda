@@ -818,7 +818,7 @@ fs.dimred<-function(fn,DF,min_comm=0.25,com_comm=0.25){
       call. = FALSE
     )
   }
-  s<-deparse(fn$Call)
+  s<-deparse1(fn$Call)
   p<-fn
   v<-as.character(fn$Call)
   if (length(v)<2){stop(
