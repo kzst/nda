@@ -1,10 +1,10 @@
 \name{data_gen}
 \alias{data_gen}
 
-\title{Generate random block matrix for NDA
+\title{Generate random block matrix for GNDA
 }
 
-\description{Generate random block matrix for Network-based Dimensionality Reduction and Analysis (NDA)
+\description{Generate random block matrix for Generalized Network-based Dimensionality Reduction and Analysis (GNDA)
 }
 
 \usage{
@@ -15,7 +15,7 @@ data_gen(n,m,nfactors=2,lambda=1)
   \item{n}{number of rows}
   \item{m}{number of columns}
   \item{nfactors}{number of blocks (factors, where the default value is 2)}
-  \item{lambda}{exponental smoothing, where the default value is 1}
+  \item{lambda}{exponential smoothing, where the default value is 1}
 }
 \details{
 \code{n}, \code{m}, \code{nfactors} must beintegers, and they are not less than 1; lambda should be a positive real number.

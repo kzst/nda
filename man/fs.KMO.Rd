@@ -15,7 +15,7 @@ fs.KMO(data,min_MSA=0.5,cor.mtx=FALSE)
   \item{cor.mtx}{Boolean value. The input is either a correlation matrix (cor.mtx=TRUE), or not (cor.mtx=FALSE)}
 }
 \details{
-Low Kaiser-Meyer-Olkin (KMO) measure os sampling adequacy do not suggest to use principal component analysis or factor analysis. Therefore, this function drop variables with low KMO/MSA values.
+Low Kaiser-Meyer-Olkin (KMO) measure of sampling adequacy does not suggest using principal component or factor analysis. Therefore, this function drop variables with low KMO/MSA values.
 }
 \value{
 

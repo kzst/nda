@@ -1,24 +1,24 @@
 \name{fs.dimred}
 \alias{fs.dimred}
-\title{Feature selection for PCA and FA
+\title{Feature selection for PCA, FA, and (G)NDA
 }
 \description{
-This function drops variables, which have low communality values and/or are common indicators (i.e. correlates more than one latent variable).
+This function drops variables that have low communality values and/or are common indicators (i.e., correlates more than one latent variables).
 }
 
 \usage{
 fs.dimred(fn,DF,min_comm=0.25,com_comm=0.25)
 }
 \arguments{
-  \item{fn}{List. Output of a principal (PCA) or an fa (FA) functions.}
+  \item{fn}{It is a list variable of the output of a principal (PCA), a fa (FA), or an ndr (NDA) function.}
   \item{DF}{Numeric data frame, or a numeric matrix of the data table}
-  \item{min_comm}{Scalar between 0 to 1. Minimal communality value, which a variable has to be acheved. Default value is 0.25.}
-  \item{com_comm}{Scalar between 0 to 1. Minimal difference value between loadings. Default value is 0.25.}
+  \item{min_comm}{Scalar between 0 to 1. Minimal communality value, which a variable has to be achieved. The default value is 0.25.}
+  \item{com_comm}{Scalar between 0 to 1. The minimal difference value between loadings. The default value is 0.25.}
 }
 \details{
-This function only works with principal and fa functions.
+This function only works with principal, and fa, and ndr functions.
 
-This function drops each variable that has a low communality value (under than min_comm value). In other words, that variable does not fit enough of any latent variable.
+This function drops each variable that has a low communality value (under min_comm value). In other words, that variable does not fit enough of any latent variable.
 
 This function also drops so-called common indicators, which correlate highly with more than one latent variable. And the difference in the correlation is either lower than the com_comm value or the greatest absolute factor loading value is not twice greater than the second greatest factor loading.
 }

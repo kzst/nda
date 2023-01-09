@@ -5,7 +5,7 @@
 Crimes in USA cities in 1990. Dependent variable (Y)
 }
 \description{
-Sample datasets for Network-based Dimensionality Reduction and Analysis (NDA)
+Sample datasets for Generalized Network-based Dimensionality Reduction and Analysis (GNDA)
 
 Crimes in USA cities in 1990. Dependent variable (Y)
 }

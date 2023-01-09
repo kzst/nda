@@ -3,7 +3,7 @@
 \title{Calculating partial distance correlation of columns of a matrix
 }
 
-\description{Calculating partial distance correlation of two columns of a matrix for Network-based Dimensionality Reduction and Analysis (NDA).
+\description{Calculating partial distance correlation of two columns of a matrix for Generalized Network-based Dimensionality Reduction and Analysis (GNDA).
 
 The calculation is very slow for large matrices!
 }
@@ -29,7 +29,7 @@ https://CRAN.R-project.org/package=energy>.
 \author{
 Prof. Zsolt T. Kosztyan, Department of Quantitative Methods, Institute of Management, Faculty of Business and Economics, University of Pannonia, Hungary
 
-e-mail: kzst@gtk.uni-pannon.hu
+e-mail: kosztyan.zsolt@gtk.uni-pannon.hu
 }
 
 \examples{

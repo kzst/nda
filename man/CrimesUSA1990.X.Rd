@@ -5,7 +5,7 @@
 Crimes in USA cities in 1990. Independent variables (X)
 }
 \description{
-Sample datasets for Network-based, non-parametric dimensionality reduction and analysis (NDA)
+Sample datasets for Generalized Network-based Dimensionality Reduction and Analysis (GNDA)
 
 Crimes in USA cities in 1990. Independent variables (X)
 }

@@ -2,10 +2,10 @@
 \alias{I40_2020}
 \docType{data}
 \title{
-NUTS2 regional development data (2020), where the data frame has 414 observations of 101 variables.
+NUTS2 regional development data (2020) of I4.0 readiness, where the data frame has 414 observations of 101 variables.
 }
 \description{
-Sample datasets for Network-based, non-parametric dimensionality reduction and analysis (NDA)
+Sample datasets for Generalized Network-based Dimensionality Reduction and Analysis (GNDA)
 
 NUTS2 regional development data (2020), where the data frame has 414 observations of 101 variables.
 }

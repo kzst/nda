@@ -1,10 +1,10 @@
 \name{biplot.nda}
 \alias{biplot.nda}
 \title{
-Biplot function for Network-based Dimensionality Reduction and Analysis (NDA)
+Biplot function for Generalized Network-based Dimensionality Reduction and Analysis (GNDA)
 }
 \description{
-Biplot function for Network-based Dimensionality Reduction and Analysis (NDA)
+Biplot function for Generalized Network-based Dimensionality Reduction and Analysis (GNDA)
 }
 \usage{
 \method{biplot}{nda}(x, main=NULL,...)
@@ -19,7 +19,7 @@ Biplot function for Network-based Dimensionality Reduction and Analysis (NDA)
 \author{
 Zsolt T. Kosztyan*, Marcell T. Kurbucz, Attila I. Katona
 
-e-mail*: kzst@gtk.uni-pannon.hu
+e-mail*: kosztyan.zsolt@gtk.uni-pannon.hu
 }
 
 

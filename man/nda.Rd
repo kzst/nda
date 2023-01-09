@@ -2,17 +2,17 @@
 \alias{nda}
 \docType{package}
 
-\title{Package of Network-based Dimensionality Reduction and Analyses}
+\title{Package of Generalized Network-based Dimensionality Reduction and Analyses}
 
 \description{
-Network-based Dimensionality Reduction and Analysis. Biplot function.
+The package of Generalized Network-based Dimensionality Reduction and Analysis (GNDA).
 }
 
 \seealso{\code{\link{ndr}}, \code{\link{plot}}, \code{\link{biplot}}, \code{\link{summary}}, \code{\link{dCor}}.}
 
 \author{Zsolt T. Kosztyan*, Marcell T. Kurbucz, Attila I. Katona
 
-e-mail*: kzst@gtk.uni-pannon.hu}
+e-mail*: kosztyan.zsolt@gtk.uni-pannon.hu}
 
 \references{
 Kosztyan, Z. T., Kurbucz, M. T., & Katona, A. I. (2022). Network-based dimensionality reduction of high-dimensional, low-sample-size datasets. Knowledge-Based Systems, 109180.

@@ -2,10 +2,10 @@
 \alias{summary.nda}
 
 \title{
-Summary function of Network-based Dimensionality Reduction and Analysis (NDA)
+Summary function of Generalized Network-based Dimensionality Reduction and Analysis (GNDA)
 }
 \description{
-Print summary of Network-based, non-parametric dimensionality reduction and analysis (NDA)
+Print summary of Generalized Network-based Dimensionality Reduction and Analysis (GNDA)
 }
 \usage{
 \method{summary}{nda}(object, digits = getOption("digits"), ...)

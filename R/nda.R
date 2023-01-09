@@ -1,16 +1,16 @@
 #-----------------------------------------------------------------------------#
 #                                                                             #
-#  NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (NDA)                  #
+#  GENERALIZED NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (GNDA)     #
 #                                                                             #
 #  Written by: Zsolt T. Kosztyan*, Marcell T. Kurbucz, Attila I. Katona       #
 #              *Department of Quantitative Methods                            #
 #              University of Pannonia, Hungary                                #
-#              kzst@gtk.uni-pannon.hu                                         #
+#              kosztyan.zsolt@gtk.uni-pannon.hu                               #
 #                                                                             #
-# Last modified: October 2022                                                 #
+# Last modified: February 2023                                                #
 #-----------------------------------------------------------------------------#
 
-###### BIPLOT FOR NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (NDA) #####
+###### BIPLOT FOR NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (NDA) ###
 
 biplot.nda <- function(x, main=NULL,...){
   if (!requireNamespace("graphics", quietly = TRUE)) {
@@ -55,7 +55,7 @@ biplot.nda <- function(x, main=NULL,...){
   }
 }
 
-# DATA GENERATION FOR NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (NDA) #
+#DATA GENERATION FOR NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (NDA)#
 
 data_gen<-function(n,m,nfactors=2,lambda=1){
   if (!requireNamespace("Matrix", quietly = TRUE)) {

@@ -1,14 +1,14 @@
 Package: nda
 Type: Package
-Title: Network-Based Dimensionality Reduction and Analysis
+Title: Generalized Network-Based Dimensionality Reduction and Analysis
 Version: 0.1.9
 Authors@R: c(
     person("Zsolt T.", "Kosztyan", email="kosztyan.zsolt@gtk.uni-pannon.hu", role = c("aut", "cre")),
-    person("Marcell T.", "Kurbucz", email="kurbuczmarcell@gtk.uni-pannon.hu", role = c("aut")),
+    person("Marcell T.", "Kurbucz", email="kurbuczmarcell@gmail.com", role = c("aut")),
     person("Attila I.", "Katona", email="katona.attila@gtk.uni-pannon.hu", role = c("aut"))
     )
 Maintainer: Zsolt T. Kosztyan <kosztyan.zsolt@gtk.uni-pannon.hu>
-Description: Non-parametric dimensionality reduction function. Reduction with and without feature selection. Plot functions. Kosztyan et. al. (2022) <doi:10.1016/j.knosys.2022.109180>.
+Description: Non-parametric dimensionality reduction function. Reduction with and without feature selection. Plot functions. Automated feature selections. Kosztyan et. al. (2022) <doi:10.1016/j.knosys.2022.109180>.
 License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true

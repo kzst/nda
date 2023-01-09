@@ -1,7 +1,7 @@
 \name{plot.nda}
 \alias{plot.nda}
 \title{
-Plot function for Network-based Dimensionality Reduction and Analysis (NDA)
+Plot function for Generalized Network-based Dimensionality Reduction and Analysis (GNDA)
 }
 \description{
 Plot variable network graph
@@ -11,14 +11,14 @@ Plot variable network graph
 }
 \arguments{
   \item{x}{an object of class 'NDA'.}
-  \item{cuts}{minimal correlation square value for an edge in the variable network graph.}
+  \item{cuts}{minimal square correlation value for an edge in the correlation network graph (default 0.3).}
   \item{...}{other graphical parameters.}
 }
 
 \author{
 Zsolt T. Kosztyan*, Marcell T. Kurbucz, Attila I. Katona
 
-e-mail*: kzst@gtk.uni-pannon.hu
+e-mail*: kosztyan.zsolt@gtk.uni-pannon.hu
 }
 
 \seealso{\code{\link{biplot}}, \code{\link{summary}}, \code{\link{ndr}}.}

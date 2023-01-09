@@ -5,7 +5,7 @@
 Governmental and economic data of countries (2020), where the data frame has 138 observations of 2161 variables.
 }
 \description{
-Sample datasets for Network-based Dimensionality Reduction and Analysis (NDA)
+Sample datasets for Generalized Network-based Dimensionality Reduction and Analysis (GNDA)
 
 Governmental and economic data of countries (2020), where the data frame has 138 observations of 2161 variables.
 }
