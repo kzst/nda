@@ -7,7 +7,7 @@
 #              University of Pannonia, Hungary                                #
 #              kosztyan.zsolt@gtk.uni-pannon.hu                               #
 #                                                                             #
-# Last modified: February 2023                                                #
+# Last modified: May 2023                                                #
 #-----------------------------------------------------------------------------#
 #' @export
 
@@ -135,33 +135,33 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
     modular=switch(
       mod_mode,
       "1"=igraph::cluster_louvain(igraph::graph.adjacency(as.matrix(MTX),
-          mode = "undirected", weighted = TRUE, diag = FALSE)),
+                                                          mode = "undirected", weighted = TRUE, diag = FALSE)),
       "2"=igraph::cluster_fast_greedy(igraph::graph.adjacency(as.matrix(MTX),
-          mode = "undirected", weighted = TRUE, diag = FALSE)),
+                                                              mode = "undirected", weighted = TRUE, diag = FALSE)),
       "3"=igraph::cluster_leading_eigen(igraph::graph.adjacency(as.matrix(MTX),
-          mode = "undirected", weighted = TRUE, diag = FALSE)),
+                                                                mode = "undirected", weighted = TRUE, diag = FALSE)),
       "4"=igraph::cluster_infomap(igraph::graph.adjacency(as.matrix(MTX),
-          mode = "undirected", weighted = TRUE, diag = FALSE)),
+                                                          mode = "undirected", weighted = TRUE, diag = FALSE)),
       "5"=igraph::cluster_walktrap(igraph::graph.adjacency(as.matrix(MTX),
-          mode = "undirected", weighted = TRUE, diag = FALSE)),
+                                                           mode = "undirected", weighted = TRUE, diag = FALSE)),
       "6"=leidenAlg::leiden.community(igraph::graph.adjacency(as.matrix(MTX),
-          mode = "undirected", weighted = TRUE, diag = FALSE))
+                                                              mode = "undirected", weighted = TRUE, diag = FALSE))
     )
   }else{
     modular=switch(
       mod_mode,
       "1"=igraph::cluster_louvain(igraph::graph.adjacency(MTX,
-          mode = "directed", weighted = TRUE, diag = FALSE)),
+                                                          mode = "directed", weighted = TRUE, diag = FALSE)),
       "2"=igraph::cluster_fast_greedy(igraph::graph.adjacency(as.matrix(MTX),
-          mode = "directed", weighted = TRUE, diag = FALSE)),
+                                                              mode = "directed", weighted = TRUE, diag = FALSE)),
       "3"=igraph::cluster_leading_eigen(igraph::graph.adjacency(as.matrix(MTX),
-          mode = "directed", weighted = TRUE, diag = FALSE)),
+                                                                mode = "directed", weighted = TRUE, diag = FALSE)),
       "4"=igraph::cluster_infomap(igraph::graph.adjacency(as.matrix(MTX),
-          mode = "directed", weighted = TRUE, diag = FALSE)),
+                                                          mode = "directed", weighted = TRUE, diag = FALSE)),
       "5"=igraph::cluster_walktrap(igraph::graph.adjacency(as.matrix(MTX),
-          mode = "directed", weighted = TRUE, diag = FALSE)),
+                                                           mode = "directed", weighted = TRUE, diag = FALSE)),
       "6"=leidenAlg::leiden.community(igraph::graph.adjacency(as.matrix(MTX),
-          mode = "directed", weighted = TRUE, diag = FALSE))
+                                                              mode = "directed", weighted = TRUE, diag = FALSE))
     )
   }
 
