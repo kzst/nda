@@ -10,7 +10,7 @@
 # Last modified: May 2023                                                #
 #-----------------------------------------------------------------------------#
 #' @export
-plot.nda <- function(x,cuts=0.3,...){
+plot.nda <- function(x,cuts=0.3,interactive=TRUE,...){
   if ("nda" %in% class(x)){
     if (!requireNamespace("igraph", quietly = TRUE)) {
       stop(
@@ -82,7 +82,16 @@ plot.nda <- function(x,cuts=0.3,...){
                   font=list(face="calibri")),layout = "layout_nicely",
                   physics = TRUE, type="full"
       )
-    nw
+
+    if (interactive==FALSE){
+      g <- igraph::graph_from_data_frame(edges,vertices=nodes,
+                                         directed = igraph::is.directed(G))
+      igraph::E(g)$weight<-igraph::E(G)$weight
+      igraph::E(g)$size<-igraph::E(G)$weight
+      igraph::plot.igraph(g, vertex.label.dist = -1.5,edge.width=igraph::E(g)$size*5+1,edge.arrow.size=0.2)
+    }else{
+      nw
+    }
   }else{
     plot(x,...)
   }

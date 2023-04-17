@@ -7,11 +7,12 @@ Plot function for Generalized Network-based Dimensionality Reduction and Analysi
 Plot variable network graph
 }
 \usage{
-\method{plot}{nda}(x, cuts=0.3,...)
+\method{plot}{nda}(x, cuts=0.3, interactive=TRUE,...)
 }
 \arguments{
   \item{x}{an object of class 'NDA'.}
   \item{cuts}{minimal square correlation value for an edge in the correlation network graph (default 0.3).}
+  \item{interactive}{Plot interactive visNetwork graph or non-interactive igraph plot (default TRUE).}
   \item{...}{other graphical parameters.}
 }
 
