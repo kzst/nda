@@ -10,7 +10,7 @@
 # Last modified: May 2023                                                #
 #-----------------------------------------------------------------------------#
 #' @export
-plot.nda <- function(x,cuts=0.3,interactive=TRUE,...){
+plot.nda <- function(x,cuts=0.3,interactive=TRUE,edgescale=1.0,labeldist=-1.5,...){
   if ("nda" %in% class(x)){
     if (!requireNamespace("igraph", quietly = TRUE)) {
       stop(
@@ -53,7 +53,7 @@ plot.nda <- function(x,cuts=0.3,interactive=TRUE,...){
         to=edges$V2,
         arrows=c("middle"),
         smooth=c(FALSE),
-        width=igraph::E(G)$weight,
+        width=(igraph::E(G)$weight)*edgescale,
         color="#5080b1"
       )
     }else{
@@ -61,7 +61,7 @@ plot.nda <- function(x,cuts=0.3,interactive=TRUE,...){
         from=edges$V1,
         to=edges$V2,
         smooth=c(FALSE),
-        width=igraph::E(G)$weight,
+        width=(igraph::E(G)$weight)*edgescale,
         color="#5080b1"
       )
     }
@@ -88,7 +88,7 @@ plot.nda <- function(x,cuts=0.3,interactive=TRUE,...){
                                          directed = igraph::is.directed(G))
       igraph::E(g)$weight<-igraph::E(G)$weight
       igraph::E(g)$size<-igraph::E(G)$weight
-      igraph::plot.igraph(g, vertex.label.dist = -1.5,edge.width=igraph::E(g)$size*5+1,edge.arrow.size=0.2)
+      igraph::plot.igraph(g, vertex.label.dist = labeldist,vertex.size=nodes$size,edge.width=(igraph::E(g)$size*5+1)*edgescale,edge.arrow.size=0.2)
     }else{
       nw
     }
