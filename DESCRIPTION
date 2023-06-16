@@ -16,7 +16,6 @@ URL: https://github.com/kzst/nda
 Depends: 
     R (>= 3.10)
 Imports: 
-    leidenAlg,
     energy,
     psych, 
     stats,

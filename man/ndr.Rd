@@ -7,7 +7,7 @@ The main function of Generalized Network-based Dimensionality Reduction and Anal
 }
 \usage{
 ndr(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,null_modell_type=4,
-mod_mode=6,min_evalue=0,min_communality=0,com_communalities=0,use_rotation=FALSE)
+mod_mode=1,min_evalue=0,min_communality=0,com_communalities=0,use_rotation=FALSE)
 
 }
 \arguments{
@@ -24,7 +24,7 @@ mod_mode=6,min_evalue=0,min_communality=0,com_communalities=0,use_rotation=FALSE
   \item{min_comm}{Minimal number of indicators per community (default: 2).}
   \item{Gamma}{Gamma parameter in multiresolution null modell (default: 1).}
   \item{null_modell_type}{'1' Differential Newmann-Grivan's null model, '2' The null model is the mean of square correlations between indicators, '3' The null model is the specified minimal square correlation, '4' Newmann-Grivan's modell (default)}
-  \item{mod_mode}{Community-based modularity calculation mode: '1' Louvain modularity, '2' Fast-greedy modularity, '3' Leading Eigen modularity, '4' Infomap modularity, '5' Walktrap modularity, '6' Leiden modularity (default)}
+  \item{mod_mode}{Community-based modularity calculation mode: '1' Louvain modularity (default), '2' Fast-greedy modularity, '3' Leading Eigen modularity, '4' Infomap modularity, '5' Walktrap modularity}
   \item{min_evalue}{Minimal eigenvector centrality value (default: 0)}
   \item{min_communality}{Minimal communality value of indicators (default: 0)}
   \item{com_communalities}{Minimal common communalities (default: 0)}
