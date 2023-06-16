@@ -28,10 +28,10 @@ e-mail*: kosztyan.zsolt@gtk.uni-pannon.hu
 \examples{
 # Biplot function without feature selection
 
-# Generate 200 x 5 random block matrix with 3 blocks and lambda=0 parameter
+# Generate 200 x 50 random block matrix with 3 blocks and lambda=0 parameter
 
 df<-data_gen(200,50,3,0)
 p<-ndr(df)
 biplot(p)
-
-\keyword{biplot}
+}
+\keyword{plot}
