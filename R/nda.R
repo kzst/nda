@@ -261,7 +261,7 @@ spdCor<-function(x){
 ########### NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (NDA) ###########
 
 ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
-              null_modell_type=4,mod_mode=1,min_evalue=0,
+              null_modell_type=4,mod_mode=6,min_evalue=0,
               min_communality=0,com_communalities=0,use_rotation=FALSE){
 
   cl<-match.call()
@@ -283,12 +283,6 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
       call. = FALSE
     )
   }
-  #if (!requireNamespace("leidenAlg", quietly = TRUE)) {
-  #  stop(
-  #    "Package \"leidenAlg\" must be installed to use this function.",
-  #    call. = FALSE
-  #  )
-  #}
   if (!requireNamespace("stats", quietly = TRUE)) {
     stop(
       "Package \"stats\" must be installed to use this function.",
@@ -392,9 +386,10 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
       "4"=igraph::cluster_infomap(igraph::graph.adjacency(as.matrix(MTX),
                                                           mode = "undirected", weighted = TRUE, diag = FALSE)),
       "5"=igraph::cluster_walktrap(igraph::graph.adjacency(as.matrix(MTX),
-                                                           mode = "undirected", weighted = TRUE, diag = FALSE))#,
-      #"6"=leidenAlg::leiden.community(igraph::graph.adjacency(as.matrix(MTX),
-      #                                                        mode = "undirected", weighted = TRUE, diag = FALSE))
+                                                           mode = "undirected", weighted = TRUE, diag = FALSE)),
+      "6"=igraph::cluster_leiden(igraph::graph.adjacency(as.matrix(MTX),
+                                                         mode = "undirected", weighted = TRUE, diag = FALSE),
+                                 objective_function = "modularity")
     )
   }else{
     modular=switch(
@@ -408,9 +403,10 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
       "4"=igraph::cluster_infomap(igraph::graph.adjacency(as.matrix(MTX),
                                                           mode = "directed", weighted = TRUE, diag = FALSE)),
       "5"=igraph::cluster_walktrap(igraph::graph.adjacency(as.matrix(MTX),
-                                                           mode = "directed", weighted = TRUE, diag = FALSE))#,
-      #"6"=leidenAlg::leiden.community(igraph::graph.adjacency(as.matrix(MTX),
-      #                                                        mode = "directed", weighted = TRUE, diag = FALSE))
+                                                           mode = "directed", weighted = TRUE, diag = FALSE)),
+      "6"=igraph::cluster_leiden(igraph::graph.adjacency(as.matrix(MTX),
+                                                         mode = "directed", weighted = TRUE, diag = FALSE),
+                                 objective_function = "modularity")
     )
   }
 
@@ -669,6 +665,7 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
   class(P) <- "nda"
   return(P)
 }
+
 
 ####### PLOT FOR NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (NDA) ######
 
