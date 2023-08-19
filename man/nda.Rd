@@ -1,4 +1,5 @@
-\name{nda}
+\name{nda-package}
+\alias{nda-package}
 \alias{nda}
 \docType{package}
 
