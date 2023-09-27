@@ -7,7 +7,7 @@
 #              University of Pannonia, Hungary                                #
 #              kosztyan.zsolt@gtk.uni-pannon.hu                               #
 #                                                                             #
-# Last modified: February 2023                                                #
+# Last modified: September 2023                                               #
 #-----------------------------------------------------------------------------#
 #' @export
 
@@ -18,6 +18,7 @@ fs.dimred<-function(fn,DF,min_comm=0.25,com_comm=0.25){
       call. = FALSE
     )
   }
+  DF<-as.data.frame(DF)
   s<-deparse1(fn$Call)
   p<-fn
   v<-as.character(fn$Call)
@@ -76,6 +77,7 @@ fs.dimred<-function(fn,DF,min_comm=0.25,com_comm=0.25){
         }else{
         if (ncol(p$loadings)<2){
           loop=FALSE
+          break
           }else{
           l<-abs(p$loadings)
           c<-matrix(0,ncol=1,nrow=nrow(l))

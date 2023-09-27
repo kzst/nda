@@ -59,6 +59,8 @@ e-mail*: kosztyan.zsolt@gtk.uni-pannon.hu
 
 \examples{
 
+# Dimension reduction
+
 data(swiss)
 df<-swiss
 p<-ndr(df)
@@ -66,6 +68,13 @@ summary(p)
 plot(p)
 biplot(p)
 
+# Data reduction
+# Distance is Euclidean's distance
+# covar=TRUE means only the distance matrix is considered.
+
+q<-ndr(1-normalize(as.matrix(dist(df))),covar=TRUE)
+summary(q)
+plot(q)
 }
 
 \keyword{multivariate}

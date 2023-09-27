@@ -7,7 +7,7 @@
 #              University of Pannonia, Hungary                                #
 #              kosztyan.zsolt@gtk.uni-pannon.hu                               #
 #                                                                             #
-# Last modified: February 2023                                                #
+# Last modified: September 2023                                               #
 #-----------------------------------------------------------------------------#
 
 ###### BIPLOT FOR NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (NDA) ###
@@ -759,8 +759,10 @@ summary.nda <- function(object,  digits =  getOption("digits"), ...) {
     print(communality,digits = digits, ...)
     cat("\nFactor loadings:\n")
     print(loadings,digits = digits, ...)
-    cat("\n\nCorrelation matrix of factor scores:\n")
-    print(stats::cor(scores),digits = digits, ...)
+    if (!is.null(scores)){
+      cat("\n\nCorrelation matrix of factor scores:\n")
+      print(stats::cor(scores),digits = digits, ...)
+    }
   }else{
     summary(object,...)
   }
@@ -815,6 +817,7 @@ fs.dimred<-function(fn,DF,min_comm=0.25,com_comm=0.25){
       call. = FALSE
     )
   }
+  DF<-as.data.frame(DF)
   s<-deparse1(fn$Call)
   p<-fn
   v<-as.character(fn$Call)
@@ -873,6 +876,7 @@ fs.dimred<-function(fn,DF,min_comm=0.25,com_comm=0.25){
       }else{
         if (ncol(p$loadings)<2){
           loop=FALSE
+          break
         }else{
           l<-abs(p$loadings)
           c<-matrix(0,ncol=1,nrow=nrow(l))
@@ -912,4 +916,32 @@ fs.dimred<-function(fn,DF,min_comm=0.25,com_comm=0.25){
   p$dropped_com<-dropped_com
   p$retained_DF<-DF
   return(p)
+}
+
+######### Normalize entire data, row, or column #######
+
+normalize <- function(x,type="all")
+{
+  results<-NULL
+  if (("data.frame" %in% class(x))|("matrix" %in% class(x))|
+      ("array" %in% class(x))){
+    results<-((x - min(x)) / (max(x) - min(x)))
+    if ("row" %in% type){
+      for (i in 1:nrow(x)){
+        results[i,]<-((x[i,] - min(x[i,])) / (max(x[i,]) - min(x[i,])))
+      }
+    }else{
+      if ("col" %in% type){
+        for (i in 1:ncol(x)){
+          results[,i]<-((x[,i] - min(x[,i])) / (max(x[,i]) - min(x[,i])))
+        }
+      }
+    }
+  }else{
+    stop(
+      "Only matrix, array or data.frame can be used in this function!",
+      call. = FALSE
+    )
+  }
+  return(results)
 }

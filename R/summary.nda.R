@@ -32,8 +32,10 @@ summary.nda <- function(object,  digits =  getOption("digits"), ...) {
     print(communality,digits = digits, ...)
     cat("\nFactor loadings:\n")
     print(loadings,digits = digits, ...)
-    cat("\n\nCorrelation matrix of factor scores:\n")
-    print(stats::cor(scores),digits = digits, ...)
+    if (!is.null(scores)){
+      cat("\n\nCorrelation matrix of factor scores:\n")
+      print(stats::cor(scores),digits = digits, ...)
+    }
   }else{
     summary(object,...)
   }
