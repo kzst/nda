@@ -25,7 +25,7 @@ biplot.nda <- function(x, main=NULL,...){
       call. = FALSE
     )
   }
-  if ("nda" %in% class(x)){
+  if (methods::is(x,"nda")){
     if (is.null(x$scores)){
       stop("Biplot requires component scores. You need to run ndr from the raw data",
            call. = FALSE)

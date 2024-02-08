@@ -14,8 +14,8 @@
 normalize <- function(x,type="all")
 {
   results<-NULL
-  if (("data.frame" %in% class(x))|("matrix" %in% class(x))|
-      ("array" %in% class(x))){
+  if ((is.data.frame(x))|(is.matrix(x))|
+      (is.array(x))){
     results<-((x - min(x)) / (max(x) - min(x)))
     if ("row" %in% type){
       for (i in 1:nrow(x)){

@@ -12,15 +12,15 @@ The calculation is very slow for large matrices!
 dCor(x,y=NULL)
 }
 \arguments{
-  \item{x}{a numeric vector, a numeric matrix (in this case y=NULL), or a numeric data frame (in this case y=NULL)}
-  \item{y}{a numeric vector (optional)}
+  \item{x}{a numeric vector, matrix or data frame.}
+  \item{y}{NULL (default) or a vector, matrix or data frame with compatible dimensions to x. The default is equivalent to y = x (but more efficient).}
 }
 \details{
-If \code{x} is a numeric vector, \code{y} must be specified. If x is a numeric matrix  or numeric data frame, y must be ignored from the parameters.
+If \code{x} is a numeric vector, \code{y} must be specified. If \code{x} is a numeric matrix  or numeric data frame, y will be neglected.
 }
 \value{
 
-Either a distance correlation value of vectors \code{x} and \code{y}, or a distance correlation matrix of \code{x}.
+Either a distance correlation coefficient of vectors \code{x} and \code{y}, or a distance correlation matrix of \code{x} if \code{x} is a matrix or a dataframe.
 }
 \references{
 Rizzo M, Szekely G (2021). _energy: E-Statistics:

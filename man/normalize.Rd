@@ -9,8 +9,8 @@ normalize(x,type="all")
 }
 
 \arguments{
-\item{x}{a data frame or data matrix}
-\item{type}{type of normalizaion. "row" normalization row by row, "col" normalization column by colum, "all" normalization for the entire data frame/matrix (default)}
+\item{x}{A data frame or data matrix.}
+\item{type}{The type of normalization. "row" normalization row by row, "col" normalization column by column, and "all" normalization for the entire data frame/matrix (default)}
 }
 
 \examples{

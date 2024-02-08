@@ -11,7 +11,7 @@
 #-----------------------------------------------------------------------------#
 #' @export
 plot.nda <- function(x,cuts=0.3,interactive=TRUE,edgescale=1.0,labeldist=-1.5,...){
-  if ("nda" %in% class(x)){
+  if (methods::is(x,"nda")){
     if (!requireNamespace("igraph", quietly = TRUE)) {
       stop(
         "Package \"igraph\" must be installed to use this function.",

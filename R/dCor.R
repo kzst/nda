@@ -18,6 +18,14 @@ dCor<-function(x,y=NULL){
       call. = FALSE
     )
   }
+  if (is.data.frame(x)|is.matrix(x)){
+    if (min(dim(x))>1){
+      if (!is.null(y)){
+        warning("x is a matrix or a data.frame with at least two columns, y is neglected.")
+      }
+      y<-NULL
+    }
+  }
   if (is.null(y)){
     if (is.data.frame(x)|is.matrix(x)){
       dC<-matrix(0,nrow=ncol(x),ncol=ncol(x))
@@ -31,8 +39,8 @@ dCor<-function(x,y=NULL){
       dCor<-dC
       dCor
     }else{
-      stop("Error: x must be a matrix or a dataframe!")
       dCor<-NULL
+      stop("Error: x must be a matrix or a dataframe!")
     }
   }else{
     dCor<-energy::dcor(x,y)

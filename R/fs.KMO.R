@@ -37,13 +37,13 @@ fs.KMO<-function(data,min_MSA=0.5,cor.mtx=FALSE){
       }
       return(x)
     }else{
-      stop("Error: data must contain at least 2 columns!")
       step.KMO<-NULL
+      stop("Error: data must contain at least 2 columns!")
       return(step.KMO)
     }
   }else{
-    stop("Error: data must be a matrix or a dataframe!")
     step.KMO<-NULL
+    stop("Error: data must be a matrix or a dataframe!")
     return(step.KMO)
   }
 }

@@ -47,8 +47,10 @@ pdCor<-function(x){
     warning("The inverse of variance-covariance matrix is calculated using Moore-Penrose generalized matrix invers due to its determinant of zero.")
     icvx <- MASS::ginv(cvx)
   }else
-    icvx <- solve(cvx)
+    icvx <- Rfast::spdinv(cvx)
 
+  rownames(icvx)<-rownames(cvx)
+  colnames(icvx)<-colnames(cvx)
   # partial correlation
   pcor <- -stats::cov2cor(icvx)
   diag(pcor) <- 1

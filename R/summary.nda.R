@@ -17,7 +17,7 @@ summary.nda <- function(object,  digits =  getOption("digits"), ...) {
       call. = FALSE
     )
   }
-  if ("nda" %in% class(object)){
+  if (methods::is(object,"nda")){
     communality <- object$communality
     loadings <- object$loadings
     uniqueness <- object$uniqueness
