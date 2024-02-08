@@ -10,36 +10,35 @@
 # Last modified: February 2023                                                #
 #-----------------------------------------------------------------------------#
 #' @export
-summary.nda <- function(object,  digits =  getOption("digits"), ...) {
+print.nda <- function(x,  digits =  getOption("digits"), ...) {
   if (!requireNamespace("stats", quietly = TRUE)) {
     stop(
       "Package \"stats\" must be installed to use this function.",
       call. = FALSE
     )
   }
-  if (methods::is(object,"nda")){
-    communality <- object$communality
-    loadings <- object$loadings
-    uniqueness <- object$uniqueness
-    factors <- object$factors
-    scores <- object$scores
-    n.obs <- object$n.obs
-    factors <- object$factors
+  if (methods::is(x,"nda")){
+    communality <- x$communality
+    loadings <- x$loadings
+    uniqueness <- x$uniqueness
+    factors <- x$factors
+    scores <- x$scores
+    n.obs <- x$n.obs
+    factors <- x$factors
+    cat("\nPrint of the NDA:\n")
+    cat("\nNumber of latent variables: ",factors)
+    cat("\nNumber of observations: ",n.obs)
+    cat("\nCommunalities:\n")
+    print(communality,digits = digits, ...)
+    cat("\nFactor loadings:\n")
+    print(loadings,digits = digits, ...)
     if (!is.null(scores)){
-      results<-list(cummunality = communality, loadings = loadings,
-                    uniqueness = uniqueness,
-                    factors = factors,
-                    scores = scores,
-                    n.obs = n.obs)
-    }else{
-      results<-list(cummunality = communality, loadings = loadings,
-                    uniqueness = uniqueness,
-                    factors = factors,
-                    n.obs = n.obs)
+      cat("\nFactor scores:\n")
+      print(scores,digits = digits, ...)
+      cat("\n\nCorrelation matrix of factor scores:\n")
+      print(stats::cor(scores),digits = digits, ...)
     }
-    return(results)
-    print.nda(object)
   }else{
-    summary(object,...)
+    print(x,...)
   }
 }

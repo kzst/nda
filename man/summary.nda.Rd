@@ -17,14 +17,24 @@ Print summary of Generalized Network-based Dimensionality Reduction and Analysis
   \item{...}{additional arguments affecting the summary produced.}
 }
 
+\value{
+
+\item{communality}{Communality estimates for each item. These are merely the sum of squared factor loadings for that item. It can be interpreted in correlation matrices.}
+\item{loadings}{A standard loading matrix of class “loadings".}
+\item{uniqueness}{Uniqueness values of indicators.}
+\item{factors}{Number of found factors.}
+\item{scores}{Estimates of the factor scores are reported (if covar=FALSE).}
+\item{n.obs}{Number of observations specified or found.}
+}
+
 \author{
 Zsolt T. Kosztyan*, Marcell T. Kurbucz, Attila I. Katona
 
-e-mail*: kzst@gtk.uni-pannon.hu
+e-mail*: kosztyan.zsolt@gtk.uni-pannon.hu
 }
 
 
-\seealso{\code{\link{biplot}}, \code{\link{plot}}, \code{\link{ndr}}.}
+\seealso{\code{\link{biplot}}, \code{\link{plot}}, \code{\link{print}}, \code{\link{ndr}}.}
 
 
 \examples{
