@@ -18,7 +18,9 @@ e-mail*: kosztyan.zsolt@gtk.uni-pannon.hu}
 \references{
 Kosztyan, Z. T., Kurbucz, M. T., & Katona, A. I. (2022). Network-based dimensionality reduction of high-dimensional, low-sample-size datasets. Knowledge-Based Systems, 109180.
 
-Kurbucz, M. T., Katona, A. I., Lantos, Z., & Kosztyan, Z. T. (2021). The Role of Societal Aspects in the Formation of Official COVID-19 Reports: A Data-Driven Analysis. International journal of environmental research and public health, 18(4), 1505.
+Kosztyán, Z. T., Katona, A. I., Kurbucz, M. T., & Lantos, Z. (2024). Generalized network-based dimensionality analysis. Expert Systems with Applications, 238, 121779. <URL:
+https://doi.org/10.1016/j.eswa.2023.121779>.
+
 }
 
 \keyword{package}

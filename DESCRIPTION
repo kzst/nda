@@ -8,7 +8,7 @@ Authors@R: c(
     person("Attila I.", "Katona", email="katona.attila@gtk.uni-pannon.hu", role = c("aut"))
     )
 Maintainer: Zsolt T. Kosztyan <kosztyan.zsolt@gtk.uni-pannon.hu>
-Description: Non-parametric dimensionality reduction function. Reduction with and without feature selection. Plot functions. Automated feature selections. Kosztyan et. al. (2022) <doi:10.1016/j.knosys.2022.109180>.
+Description: Non-parametric dimensionality reduction function. Reduction with and without feature selection. Plot functions. Automated feature selections. Kosztyan et. al. (2024) <https://doi.org/10.1016/j.eswa.2023.121779>.
 License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true

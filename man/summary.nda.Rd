@@ -26,7 +26,11 @@ Print summary of Generalized Network-based Dimensionality Reduction and Analysis
 \item{scores}{Estimates of the factor scores are reported (if covar=FALSE).}
 \item{n.obs}{Number of observations specified or found.}
 }
+\references{
+Kosztyán, Z. T., Katona, A. I., Kurbucz, M. T., & Lantos, Z. (2024). Generalized network-based dimensionality analysis. Expert Systems with Applications, 238, 121779. <URL:
+https://doi.org/10.1016/j.eswa.2023.121779>.
 
+}
 \author{
 Zsolt T. Kosztyan*, Marcell T. Kurbucz, Attila I. Katona
 
