@@ -13,7 +13,8 @@
 
 ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
               null_modell_type=4,mod_mode=6,min_evalue=0,
-              min_communality=0,com_communalities=0,use_rotation=FALSE){
+              min_communality=0,com_communalities=0,use_rotation=FALSE,
+              rotation="oblimin"){
 
   cl<-match.call()
   if (!requireNamespace("energy", quietly = TRUE)) {
@@ -216,7 +217,8 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
     DATAs[[i]]=r[,S==M[i]];
   }
   if (ncol(L)>1 && use_rotation==TRUE){
-    L<-psych::principal(L,nfactors = dim(L)[2])$scores
+    L<-psych::principal(L,nfactors = dim(L)[2],
+                        rotate = rotation)$scores
   }else{
     L<-scale(L)
   }
@@ -280,7 +282,8 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
       }
     }
     if (ncol(L)>1 && use_rotation==TRUE){
-      L<-psych::principal(L,nfactors = dim(L)[2])$scores
+      L<-psych::principal(L,nfactors = dim(L)[2],
+                          rotate = rotation)$scores
     }else{
       L<-scale(L)
     }
@@ -367,7 +370,8 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
       L[,i]<-result
     }
     if (ncol(L)>1 && use_rotation==TRUE){
-      L<-psych::principal(L,nfactors = dim(L)[2])$scores
+      L<-psych::principal(L,nfactors = dim(L)[2],
+                          rotate = rotation)$scores
     }else{
       L<-scale(L)
     }

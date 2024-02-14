@@ -7,7 +7,8 @@ The main function of Generalized Network-based Dimensionality Reduction and Anal
 }
 \usage{
 ndr(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,null_modell_type=4,
-mod_mode=6,min_evalue=0,min_communality=0,com_communalities=0,use_rotation=FALSE)
+mod_mode=6,min_evalue=0,min_communality=0,com_communalities=0,use_rotation=FALSE,
+rotation="oblimin")
 
 }
 \arguments{
@@ -28,7 +29,8 @@ mod_mode=6,min_evalue=0,min_communality=0,com_communalities=0,use_rotation=FALSE
   \item{min_evalue}{Minimal eigenvector centrality value (default: 0)}
   \item{min_communality}{Minimal communality value of indicators (default: 0)}
   \item{com_communalities}{Minimal common communalities (default: 0)}
-  \item{use_rotation}{FALSE no rotation (default), TRUE varimax rotation}
+  \item{use_rotation}{FALSE no rotation (default), TRUE the rotation is used.}
+  \item{rotation}{"none", "varimax", "quartimax", "promax", "oblimin", "simplimax", and "cluster" are possible rotations/transformations of the solution. "oblimin" is the default, if use_rotation is TRUE.}
 }
 \details{
 NDA both works on low and high simple size datasets. If min_evalue=min_communality=com_communalities=0 than there is no feature selection.

@@ -11,8 +11,9 @@ This package provides Network-based dimensionality reduction and analysis.
 #### Author
 
 * Zsolt T. Kosztyan
-* Attila I. Katona
 * Marcell T. Kurbucz
+* Attila I. Katona
+* Zahid Khan
 
 #### Contributor
 
