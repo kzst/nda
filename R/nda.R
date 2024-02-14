@@ -2,12 +2,13 @@
 #                                                                             #
 #  GENERALIZED NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (GNDA)     #
 #                                                                             #
-#  Written by: Zsolt T. Kosztyan*, Marcell T. Kurbucz, Attila I. Katona       #
+#  Written by: Zsolt T. Kosztyan*, Marcell T. Kurbucz, Attila I. Katona,      #
+#              Zahid Khan                                                     #
 #              *Department of Quantitative Methods                            #
 #              University of Pannonia, Hungary                                #
 #              kosztyan.zsolt@gtk.uni-pannon.hu                               #
 #                                                                             #
-# Last modified: September 2023                                               #
+# Last modified: February 2024                                                #
 #-----------------------------------------------------------------------------#
 
 ###### BIPLOT FOR NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (NDA) ###
@@ -111,6 +112,14 @@ dCor<-function(x,y=NULL){
       call. = FALSE
     )
   }
+  if (is.data.frame(x)|is.matrix(x)){
+    if (min(dim(x))>1){
+      if (!is.null(y)){
+        warning("x is a matrix or a data.frame with at least two columns, y is neglected.")
+      }
+      y<-NULL
+    }
+  }
   if (is.null(y)){
     if (is.data.frame(x)|is.matrix(x)){
       dC<-matrix(0,nrow=ncol(x),ncol=ncol(x))
@@ -124,14 +133,15 @@ dCor<-function(x,y=NULL){
       dCor<-dC
       dCor
     }else{
-      stop("Error: x must be a matrix or a dataframe!")
       dCor<-NULL
+      stop("Error: x must be a matrix or a dataframe!")
     }
   }else{
     dCor<-energy::dcor(x,y)
     dCor
   }
 }
+
 
 ######## MATRIX-BASED DISTANCE COVARIANCE ########
 
@@ -201,14 +211,17 @@ pdCor<-function(x){
     warning("The inverse of variance-covariance matrix is calculated using Moore-Penrose generalized matrix invers due to its determinant of zero.")
     icvx <- MASS::ginv(cvx)
   }else
-    icvx <- solve(cvx)
+    icvx <- Rfast::spdinv(cvx)
 
+  rownames(icvx)<-rownames(cvx)
+  colnames(icvx)<-colnames(cvx)
   # partial correlation
   pcor <- -stats::cov2cor(icvx)
   diag(pcor) <- 1
   pdCor<-pcor
   pdCor
 }
+
 
 
 ######## MATRIX-BASED DISTANCE SEMI-PARTIAL CORRELATION ########
@@ -248,7 +261,10 @@ spdCor<-function(x){
     warning("The inverse of variance-covariance matrix is calculated using Moore-Penrose generalized matrix invers due to its determinant of zero.")
     icvx <- MASS::ginv(cvx)
   }else
-    icvx <- solve(cvx)
+    icvx <- Rfast::spdinv(cvx)
+
+  rownames(icvx)<-rownames(cvx)
+  colnames(icvx)<-colnames(cvx)
 
   # semi-partial correlation
   spcor <- -stats::cov2cor(icvx)/sqrt(diag(cvx))/sqrt(abs(diag(icvx)-t(t(icvx^2)/diag(icvx))))
@@ -258,11 +274,12 @@ spdCor<-function(x){
 }
 
 
-########### NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (NDA) ###########
+#### GENERALIZED NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (GNDA) ####
 
 ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
               null_modell_type=4,mod_mode=6,min_evalue=0,
-              min_communality=0,com_communalities=0,use_rotation=FALSE){
+              min_communality=0,com_communalities=0,use_rotation=FALSE,
+              rotation="oblimin"){
 
   cl<-match.call()
   if (!requireNamespace("energy", quietly = TRUE)) {
@@ -334,12 +351,12 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
   COR[is.na(COR)]<-0
   issymm<-isSymmetric(as.matrix(COR))
   #if (issymm==FALSE){
-  #  if (mod_mode<4){
-  #    stop(
-  #      "If correlation/simmilarity matrix is non-symmetric only InfoMap/Walktrap modularities can be used.",
-  #      call. = FALSE
-  #    )
-  #  }
+  #if (mod_mode<4){
+  #  stop(
+  #    "If correlation/simmilarity matrix is non-symmetric only InfoMap/Walktrap modularities can be used.",
+  #    call. = FALSE
+  #  )
+  #}
   #}
   R<-COR^2
   R<-as.data.frame(R)
@@ -465,7 +482,8 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
     DATAs[[i]]=r[,S==M[i]];
   }
   if (ncol(L)>1 && use_rotation==TRUE){
-    L<-psych::principal(L,nfactors = dim(L)[2])$scores
+    L<-psych::principal(L,nfactors = dim(L)[2],
+                        rotate = rotation)$scores
   }else{
     L<-scale(L)
   }
@@ -529,7 +547,8 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
       }
     }
     if (ncol(L)>1 && use_rotation==TRUE){
-      L<-psych::principal(L,nfactors = dim(L)[2])$scores
+      L<-psych::principal(L,nfactors = dim(L)[2],
+                          rotate = rotation)$scores
     }else{
       L<-scale(L)
     }
@@ -616,7 +635,8 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
       L[,i]<-result
     }
     if (ncol(L)>1 && use_rotation==TRUE){
-      L<-psych::principal(L,nfactors = dim(L)[2])$scores
+      L<-psych::principal(L,nfactors = dim(L)[2],
+                          rotate = rotation)$scores
     }else{
       L<-scale(L)
     }
@@ -667,10 +687,10 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
 }
 
 
-####### PLOT FOR NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (NDA) ######
+###### PLOT FOR NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (NDA) ######
 
-plot.nda <- function(x,cuts=0.3,...){
-  if ("nda" %in% class(x)){
+plot.nda <- function(x,cuts=0.3,interactive=TRUE,edgescale=1.0,labeldist=-1.5,...){
+  if (methods::is(x,"nda")){
     if (!requireNamespace("igraph", quietly = TRUE)) {
       stop(
         "Package \"igraph\" must be installed to use this function.",
@@ -701,17 +721,29 @@ plot.nda <- function(x,cuts=0.3,...){
     }
     nodes<-as.data.frame(igraph::V(G)$name)
     nodes$label<-rownames(x$R)
+    nodes$size<-igraph::evcent(G)$vector*10+5
     nodes$color<-grDevices::hsv(x$membership/max(x$membership))
     nodes[x$membership==0,"color"]<-"#000000"
-    colnames(nodes)<-c("id","title","color")
+    colnames(nodes)<-c("id","title","size","color")
     edges<-as.data.frame(igraph::as_edgelist(G))
-    edges <- data.frame(
-      from=edges$V1,
-      to=edges$V2,
-      smooth=c(FALSE),
-      width=igraph::E(G)$weight,
-      color="#5080b1"
-    )
+    if (igraph::is.directed(G)){
+      edges <- data.frame(
+        from=edges$V1,
+        to=edges$V2,
+        arrows=c("middle"),
+        smooth=c(FALSE),
+        width=(igraph::E(G)$weight)*edgescale,
+        color="#5080b1"
+      )
+    }else{
+      edges <- data.frame(
+        from=edges$V1,
+        to=edges$V2,
+        smooth=c(FALSE),
+        width=(igraph::E(G)$weight)*edgescale,
+        color="#5080b1"
+      )
+    }
 
     nw <-
       visNetwork::visIgraphLayout(
@@ -729,13 +761,22 @@ plot.nda <- function(x,cuts=0.3,...){
           font=list(face="calibri")),layout = "layout_nicely",
         physics = TRUE, type="full"
       )
-    nw
+
+    if (interactive==FALSE){
+      g <- igraph::graph_from_data_frame(edges,vertices=nodes,
+                                         directed = igraph::is.directed(G))
+      igraph::E(g)$weight<-igraph::E(G)$weight
+      igraph::E(g)$size<-igraph::E(G)$weight
+      igraph::plot.igraph(g, vertex.label.dist = labeldist,vertex.size=nodes$size,edge.width=(igraph::E(g)$size*5+1)*edgescale,edge.arrow.size=0.2)
+    }else{
+      nw
+    }
   }else{
     plot(x,...)
   }
 }
 
-# SUMMARY FUNCTION FOR NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (NDA)#
+#SUMMARY FUNCTION FOR NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (NDA)#
 
 summary.nda <- function(object,  digits =  getOption("digits"), ...) {
   if (!requireNamespace("stats", quietly = TRUE)) {
@@ -744,7 +785,7 @@ summary.nda <- function(object,  digits =  getOption("digits"), ...) {
       call. = FALSE
     )
   }
-  if ("nda" %in% class(object)){
+  if (methods::is(object,"nda")){
     communality <- object$communality
     loadings <- object$loadings
     uniqueness <- object$uniqueness
@@ -752,7 +793,44 @@ summary.nda <- function(object,  digits =  getOption("digits"), ...) {
     scores <- object$scores
     n.obs <- object$n.obs
     factors <- object$factors
-    cat("\nSummary of the NDA:\n")
+    if (!is.null(scores)){
+      results<-list(cummunality = communality, loadings = loadings,
+                    uniqueness = uniqueness,
+                    factors = factors,
+                    scores = scores,
+                    n.obs = n.obs)
+    }else{
+      results<-list(cummunality = communality, loadings = loadings,
+                    uniqueness = uniqueness,
+                    factors = factors,
+                    n.obs = n.obs)
+    }
+    return(results)
+    print.nda(object)
+  }else{
+    summary(object,...)
+  }
+}
+
+
+# PRINT FUNCTION FOR NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (NDA)#
+
+print.nda <- function(x,  digits =  getOption("digits"), ...) {
+  if (!requireNamespace("stats", quietly = TRUE)) {
+    stop(
+      "Package \"stats\" must be installed to use this function.",
+      call. = FALSE
+    )
+  }
+  if (methods::is(x,"nda")){
+    communality <- x$communality
+    loadings <- x$loadings
+    uniqueness <- x$uniqueness
+    factors <- x$factors
+    scores <- x$scores
+    n.obs <- x$n.obs
+    factors <- x$factors
+    cat("\nPrint of the NDA:\n")
     cat("\nNumber of latent variables: ",factors)
     cat("\nNumber of observations: ",n.obs)
     cat("\nCommunalities:\n")
@@ -760,13 +838,17 @@ summary.nda <- function(object,  digits =  getOption("digits"), ...) {
     cat("\nFactor loadings:\n")
     print(loadings,digits = digits, ...)
     if (!is.null(scores)){
+      cat("\nFactor scores:\n")
+      print(scores,digits = digits, ...)
       cat("\n\nCorrelation matrix of factor scores:\n")
       print(stats::cor(scores),digits = digits, ...)
     }
   }else{
-    summary(object,...)
+    print(x,...)
   }
 }
+
+
 
 ######### Feature selection for KMO #######
 
@@ -807,6 +889,7 @@ fs.KMO<-function(data,min_MSA=0.5,cor.mtx=FALSE){
     return(step.KMO)
   }
 }
+
 
 ######### Feature selection for PCA/FA/NDA #######
 
@@ -923,8 +1006,8 @@ fs.dimred<-function(fn,DF,min_comm=0.25,com_comm=0.25){
 normalize <- function(x,type="all")
 {
   results<-NULL
-  if (("data.frame" %in% class(x))|("matrix" %in% class(x))|
-      ("array" %in% class(x))){
+  if ((is.data.frame(x))|(is.matrix(x))|
+      (is.array(x))){
     results<-((x - min(x)) / (max(x) - min(x)))
     if ("row" %in% type){
       for (i in 1:nrow(x)){

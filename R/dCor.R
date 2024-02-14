@@ -2,15 +2,16 @@
 #                                                                             #
 #  GENERALIZED NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (GNDA)     #
 #                                                                             #
-#  Written by: Zsolt T. Kosztyan*, Marcell T. Kurbucz, Attila I. Katona       #
+#  Written by: Zsolt T. Kosztyan*, Marcell T. Kurbucz, Attila I. Katona,      #
+#              Zahid Khan                                                     #
 #              *Department of Quantitative Methods                            #
 #              University of Pannonia, Hungary                                #
 #              kosztyan.zsolt@gtk.uni-pannon.hu                               #
 #                                                                             #
-# Last modified: February 2023                                                #
+# Last modified: February 2024                                                #
 #-----------------------------------------------------------------------------#
+######## MATRIX-BASED DISTANCE CORRELATION ########
 #' @export
-
 dCor<-function(x,y=NULL){
   if (!requireNamespace("energy", quietly = TRUE)) {
     stop(

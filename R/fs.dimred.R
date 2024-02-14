@@ -2,15 +2,16 @@
 #                                                                             #
 #  GENERALIZED NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (GNDA)     #
 #                                                                             #
-#  Written by: Zsolt T. Kosztyan*, Marcell T. Kurbucz, Attila I. Katona       #
+#  Written by: Zsolt T. Kosztyan*, Marcell T. Kurbucz, Attila I. Katona,      #
+#              Zahid Khan                                                     #
 #              *Department of Quantitative Methods                            #
 #              University of Pannonia, Hungary                                #
 #              kosztyan.zsolt@gtk.uni-pannon.hu                               #
 #                                                                             #
-# Last modified: September 2023                                               #
+# Last modified: February 2024                                                #
 #-----------------------------------------------------------------------------#
+######### Feature selection for PCA/FA/NDA #######
 #' @export
-
 fs.dimred<-function(fn,DF,min_comm=0.25,com_comm=0.25){
   if (!requireNamespace("psych", quietly = TRUE)) {
     stop(

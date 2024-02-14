@@ -2,29 +2,22 @@
 #                                                                             #
 #  GENERALIZED NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (GNDA)     #
 #                                                                             #
-#  Written by: Zsolt T. Kosztyan*, Marcell T. Kurbucz, Attila I. Katona       #
+#  Written by: Zsolt T. Kosztyan*, Marcell T. Kurbucz, Attila I. Katona,      #
+#              Zahid Khan                                                     #
 #              *Department of Quantitative Methods                            #
 #              University of Pannonia, Hungary                                #
 #              kosztyan.zsolt@gtk.uni-pannon.hu                               #
 #                                                                             #
-# Last modified: February 2023                                                #
+# Last modified: February 2024                                                #
 #-----------------------------------------------------------------------------#
+######## MATRIX-BASED DISTANCE COVARIANCE ########
 #' @export
-
 dCov<-function(x,y=NULL){
   if (!requireNamespace("energy", quietly = TRUE)) {
     stop(
       "Package \"energy\" must be installed to use this function.",
       call. = FALSE
     )
-  }
-  if (is.data.frame(x)|is.matrix(x)){
-    if (min(dim(x))>1){
-      if (!is.null(y)){
-        warning("x is a matrix or a data.frame with at least two columns, y is neglected.")
-      }
-      y<-NULL
-    }
   }
   if (is.null(y)){
     if (is.data.frame(x)|is.matrix(x)){
@@ -39,8 +32,8 @@ dCov<-function(x,y=NULL){
       dCov<-dC
       dCov
     }else{
-      dCov<-NULL
       stop("Error: x must be a matrix or a dataframe!")
+      dCov<-NULL
     }
   }else{
     dCov<-energy::dcov(x,y)
