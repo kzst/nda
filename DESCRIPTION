@@ -1,7 +1,7 @@
 Package: nda
 Type: Package
 Title: Generalized Network-Based Dimensionality Reduction and Analysis
-Version: 0.1.14
+Version: 0.1.15
 Authors@R: c(
     person("Zsolt T.", "Kosztyan", email="kosztyan.zsolt@gtk.uni-pannon.hu", role = c("aut", "cre")),
     person("Marcell T.", "Kurbucz", email="kurbuczmarcell@gmail.com", role = c("aut")),

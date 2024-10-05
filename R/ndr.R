@@ -178,6 +178,14 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
   # Estimate latent variables
 
   M<-sort(unique(S))
+  if (min(M)>0)
+  {
+    M2=min(M):(length(M))
+  }else{
+    M2=min(M):(length(M)-1)
+  }
+  S<-M2[match(S,M)]
+  M<-M2
   if (M[1]==0){
     M<-M[-1]
   }
@@ -188,7 +196,6 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
     r[is.na(r)]<-0
   }
   # Feature selection (1) - Drop peripheric items
-
   Coords<-c(1:nrow(as.matrix(S)))
   L<-matrix(0,nrow(DATA),nrow(as.matrix(M))) # Factor scores
 
@@ -197,8 +204,8 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
   for (i in 1:nrow(as.matrix(M))){
     Coordsi<-Coords[(S==M[i])&(coords==1)]
     if (issymm==TRUE) {
-    EVC<-as.matrix(igraph::eigen_centrality(igraph::graph.adjacency(
-      as.matrix(R[Coordsi,Coordsi]), mode = "undirected",
+      EVC<-as.matrix(igraph::eigen_centrality(igraph::graph.adjacency(
+        as.matrix(R[Coordsi,Coordsi]), mode = "undirected",
         weighted = TRUE, diag = FALSE))$vector)
     }else{
       EVC<-as.matrix(igraph::eigen_centrality(igraph::graph.adjacency(
@@ -207,7 +214,7 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
     }
     if ((nrow(as.matrix(EVC[EVC>min_evalue]))>2)&(nrow(EVC)>2)){
       L[,i]<-as.matrix(rowSums(r[,
-        Coordsi[EVC>min_evalue]] * EVC[EVC>min_evalue]))
+                                 Coordsi[EVC>min_evalue]] * EVC[EVC>min_evalue]))
       coords[Coordsi[EVC<=min_evalue]]<-0
       coords[Coordsi[EVC<=min_evalue]]<-0
       S[Coordsi[EVC<=min_evalue]]<-0
