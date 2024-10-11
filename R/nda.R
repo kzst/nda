@@ -442,7 +442,12 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
   # Estimate latent variables
 
   M<-sort(unique(S))
-  M2=min(M):(length(M)-1)
+  if (min(M)>0)
+  {
+    M2=min(M):(length(M))
+  }else{
+    M2=min(M):(length(M)-1)
+  }
   S<-M2[match(S,M)]
   M<-M2
   if (M[1]==0){
@@ -687,7 +692,6 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
   class(P) <- "nda"
   return(P)
 }
-
 
 ###### PLOT FOR NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (NDA) ######
 
