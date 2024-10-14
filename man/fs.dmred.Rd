@@ -42,7 +42,7 @@ Zsolt T. Kosztyan*, Marcell T. Kurbucz, Attila I. Katona
 e-mail*: kosztyan.zsolt@gtk.uni-pannon.hu
 }
 
-\seealso{\code{\link[pkg:psych]{psych::principal}}, \code{\link[pkg:psych]{psych::fa}}, \code{\link{ndr}}.}
+\seealso{\code{\link[psych:principal]{psych::principal}}, \code{\link[psych:fa]{psych::fa}}, \code{\link{ndr}}.}
 
 \examples{
 
