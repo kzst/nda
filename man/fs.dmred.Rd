@@ -42,7 +42,7 @@ Zsolt T. Kosztyan*, Marcell T. Kurbucz, Attila I. Katona
 e-mail*: kosztyan.zsolt@gtk.uni-pannon.hu
 }
 
-\seealso{\code{\link{principal}},\code{\link{fa}},\code{\link{ndr}}.}
+\seealso{\code{\link{psych}{principal}},\code{\link{psych}{fa}},\code{\link{ndr}}.}
 
 \examples{
 
