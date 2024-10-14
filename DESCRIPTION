@@ -26,5 +26,6 @@ Imports:
     Rfast,
     MASS,
     ppcor,
+    leidenAlg,
     visNetwork
 RoxygenNote: 7.2.3

@@ -48,6 +48,12 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
       call. = FALSE
     )
   }
+  if (!requireNamespace("leidenAlg", quietly = TRUE)) {
+    stop(
+      "Package \"leidenAlg\" must be installed to use this function.",
+      call. = FALSE
+    )
+  }
   DATA<-r
   X<-r
 
@@ -86,14 +92,7 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
   }
   COR[is.na(COR)]<-0
   issymm<-isSymmetric(as.matrix(COR))
-  #if (issymm==FALSE){
-    #if (mod_mode<4){
-    #  stop(
-    #    "If correlation/simmilarity matrix is non-symmetric only InfoMap/Walktrap modularities can be used.",
-    #    call. = FALSE
-    #  )
-    #}
-  #}
+
   R<-COR^2
   R<-as.data.frame(R)
   colnames(R)<-colnames(r)
@@ -130,36 +129,34 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
   if (issymm==TRUE) {
     modular=switch(
       mod_mode,
-      "1"=igraph::cluster_louvain(igraph::graph.adjacency(as.matrix(MTX),
+      "1"=igraph::cluster_louvain(igraph::graph_from_adjacency_matrix(as.matrix(MTX),
                                                           mode = "undirected", weighted = TRUE, diag = FALSE)),
-      "2"=igraph::cluster_fast_greedy(igraph::graph.adjacency(as.matrix(MTX),
+      "2"=igraph::cluster_fast_greedy(igraph::graph_from_adjacency_matrix(as.matrix(MTX),
                                                               mode = "undirected", weighted = TRUE, diag = FALSE)),
-      "3"=igraph::cluster_leading_eigen(igraph::graph.adjacency(as.matrix(MTX),
+      "3"=igraph::cluster_leading_eigen(igraph::graph_from_adjacency_matrix(as.matrix(MTX),
                                                                 mode = "undirected", weighted = TRUE, diag = FALSE)),
-      "4"=igraph::cluster_infomap(igraph::graph.adjacency(as.matrix(MTX),
+      "4"=igraph::cluster_infomap(igraph::graph_from_adjacency_matrix(as.matrix(MTX),
                                                           mode = "undirected", weighted = TRUE, diag = FALSE)),
-      "5"=igraph::cluster_walktrap(igraph::graph.adjacency(as.matrix(MTX),
+      "5"=igraph::cluster_walktrap(igraph::graph_from_adjacency_matrix(as.matrix(MTX),
                                                            mode = "undirected", weighted = TRUE, diag = FALSE)),
-      "6"=igraph::cluster_leiden(igraph::graph.adjacency(as.matrix(MTX),
-                                                              mode = "undirected", weighted = TRUE, diag = FALSE),
-                                 objective_function = "modularity")
+      "6"=leidenAlg::leiden.community(igraph::graph_from_adjacency_matrix(as.matrix(MTX),
+                                                              mode = "directed", weighted = TRUE, diag = FALSE))
     )
   }else{
     modular=switch(
       mod_mode,
-      "1"=igraph::cluster_louvain(igraph::graph.adjacency(MTX,
-                                                          mode = "undirected", weighted = TRUE, diag = FALSE)),
-      "2"=igraph::cluster_fast_greedy(igraph::graph.adjacency(as.matrix(MTX),
-                                                              mode = "undirected", weighted = TRUE, diag = FALSE)),
-      "3"=igraph::cluster_leading_eigen(igraph::graph.adjacency(as.matrix(MTX),
-                                                                mode = "undirected", weighted = TRUE, diag = FALSE)),
-      "4"=igraph::cluster_infomap(igraph::graph.adjacency(as.matrix(MTX),
+      "1"=igraph::cluster_louvain(igraph::graph_from_adjacency_matrix(as.matrix(MTX),
+                                                          mode = "max", weighted = TRUE, diag = FALSE)),
+      "2"=igraph::cluster_fast_greedy(igraph::graph_from_adjacency_matrix(as.matrix(MTX),
+                                                              mode = "max", weighted = TRUE, diag = FALSE)),
+      "3"=igraph::cluster_leading_eigen(igraph::graph_from_adjacency_matrix(as.matrix(MTX),
+                                                                mode = "max", weighted = TRUE, diag = FALSE)),
+      "4"=igraph::cluster_infomap(igraph::graph_from_adjacency_matrix(as.matrix(MTX),
                                                           mode = "directed", weighted = TRUE, diag = FALSE)),
-      "5"=igraph::cluster_walktrap(igraph::graph.adjacency(as.matrix(MTX),
+      "5"=igraph::cluster_walktrap(igraph::graph_from_adjacency_matrix(as.matrix(MTX),
                                                            mode = "directed", weighted = TRUE, diag = FALSE)),
-      "6"=igraph::cluster_leiden(igraph::graph.adjacency(as.matrix(MTX),
-                                                              mode = "undirected", weighted = TRUE, diag = FALSE),
-                                 objective_function = "modularity")
+      "6"=leidenAlg::leiden.community(igraph::graph_from_adjacency_matrix(as.matrix(MTX),
+                                                                      mode = "directed", weighted = TRUE, diag = FALSE))
     )
   }
 
@@ -204,11 +201,11 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
   for (i in 1:nrow(as.matrix(M))){
     Coordsi<-Coords[(S==M[i])&(coords==1)]
     if (issymm==TRUE) {
-      EVC<-as.matrix(igraph::eigen_centrality(igraph::graph.adjacency(
+      EVC<-as.matrix(igraph::eigen_centrality(igraph::graph_from_adjacency_matrix(
         as.matrix(R[Coordsi,Coordsi]), mode = "undirected",
         weighted = TRUE, diag = FALSE))$vector)
     }else{
-      EVC<-as.matrix(igraph::eigen_centrality(igraph::graph.adjacency(
+      EVC<-as.matrix(igraph::eigen_centrality(igraph::graph_from_adjacency_matrix(
         as.matrix(R[Coordsi,Coordsi]), mode = "directed",
         weighted = TRUE, diag = FALSE))$vector)
     }
@@ -361,11 +358,11 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
     for (i in 1:nrow(as.matrix(M))){
       Coordsi=Coords[(S==M[i])&(coords==1)]
       if (issymm==TRUE) {
-        EVC<-as.matrix(igraph::eigen_centrality(igraph::graph.adjacency(
+        EVC<-as.matrix(igraph::eigen_centrality(igraph::graph_from_adjacency_matrix(
          as.matrix(R[Coordsi,Coordsi]), mode = "undirected",
           weighted = TRUE, diag = FALSE))$vector)
       }else{
-        EVC<-as.matrix(igraph::eigen_centrality(igraph::graph.adjacency(
+        EVC<-as.matrix(igraph::eigen_centrality(igraph::graph_from_adjacency_matrix(
          as.matrix(R[Coordsi,Coordsi]), mode = "directed",
           weighted = TRUE, diag = FALSE))$vector)
       }

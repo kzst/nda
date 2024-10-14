@@ -7,7 +7,7 @@ Plot function for Generalized Network-based Dimensionality Reduction and Analysi
 Plot variable network graph
 }
 \usage{
-\method{plot}{nda}(x, cuts=0.3, interactive=TRUE,edgescale=1.0,labeldist=-1.5,...)
+\method{plot}{nda}(x, cuts=0.3, interactive=TRUE,edgescale=1.0,labeldist=-1.5,show_weights=FALSE,...)
 }
 \arguments{
   \item{x}{an object of class 'NDA'.}
@@ -15,6 +15,7 @@ Plot variable network graph
   \item{interactive}{Plot interactive visNetwork graph or non-interactive igraph plot (default TRUE).}
   \item{edgescale}{Proportion scale value of edge width.}
   \item{labeldist}{Vertex label distance in non-interactive igraph plot (default value =-1.5).}
+  \item{show_weights}{Show edge weights (default FALSE)).}
   \item{...}{other graphical parameters.}
 }
 \references{

@@ -312,6 +312,12 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
       call. = FALSE
     )
   }
+  if (!requireNamespace("leidenAlg", quietly = TRUE)) {
+    stop(
+      "Package \"leidenAlg\" must be installed to use this function.",
+      call. = FALSE
+    )
+  }
   DATA<-r
   X<-r
 
@@ -350,14 +356,7 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
   }
   COR[is.na(COR)]<-0
   issymm<-isSymmetric(as.matrix(COR))
-  #if (issymm==FALSE){
-  #if (mod_mode<4){
-  #  stop(
-  #    "If correlation/simmilarity matrix is non-symmetric only InfoMap/Walktrap modularities can be used.",
-  #    call. = FALSE
-  #  )
-  #}
-  #}
+
   R<-COR^2
   R<-as.data.frame(R)
   colnames(R)<-colnames(r)
@@ -394,36 +393,34 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
   if (issymm==TRUE) {
     modular=switch(
       mod_mode,
-      "1"=igraph::cluster_louvain(igraph::graph.adjacency(as.matrix(MTX),
-                                                          mode = "undirected", weighted = TRUE, diag = FALSE)),
-      "2"=igraph::cluster_fast_greedy(igraph::graph.adjacency(as.matrix(MTX),
-                                                              mode = "undirected", weighted = TRUE, diag = FALSE)),
-      "3"=igraph::cluster_leading_eigen(igraph::graph.adjacency(as.matrix(MTX),
-                                                                mode = "undirected", weighted = TRUE, diag = FALSE)),
-      "4"=igraph::cluster_infomap(igraph::graph.adjacency(as.matrix(MTX),
-                                                          mode = "undirected", weighted = TRUE, diag = FALSE)),
-      "5"=igraph::cluster_walktrap(igraph::graph.adjacency(as.matrix(MTX),
-                                                           mode = "undirected", weighted = TRUE, diag = FALSE)),
-      "6"=igraph::cluster_leiden(igraph::graph.adjacency(as.matrix(MTX),
-                                                         mode = "undirected", weighted = TRUE, diag = FALSE),
-                                 objective_function = "modularity")
+      "1"=igraph::cluster_louvain(igraph::graph_from_adjacency_matrix(as.matrix(MTX),
+                                                                      mode = "undirected", weighted = TRUE, diag = FALSE)),
+      "2"=igraph::cluster_fast_greedy(igraph::graph_from_adjacency_matrix(as.matrix(MTX),
+                                                                          mode = "undirected", weighted = TRUE, diag = FALSE)),
+      "3"=igraph::cluster_leading_eigen(igraph::graph_from_adjacency_matrix(as.matrix(MTX),
+                                                                            mode = "undirected", weighted = TRUE, diag = FALSE)),
+      "4"=igraph::cluster_infomap(igraph::graph_from_adjacency_matrix(as.matrix(MTX),
+                                                                      mode = "undirected", weighted = TRUE, diag = FALSE)),
+      "5"=igraph::cluster_walktrap(igraph::graph_from_adjacency_matrix(as.matrix(MTX),
+                                                                       mode = "undirected", weighted = TRUE, diag = FALSE)),
+      "6"=leidenAlg::leiden.community(igraph::graph_from_adjacency_matrix(as.matrix(MTX),
+                                                                          mode = "directed", weighted = TRUE, diag = FALSE))
     )
   }else{
     modular=switch(
       mod_mode,
-      "1"=igraph::cluster_louvain(igraph::graph.adjacency(MTX,
-                                                          mode = "undirected", weighted = TRUE, diag = FALSE)),
-      "2"=igraph::cluster_fast_greedy(igraph::graph.adjacency(as.matrix(MTX),
-                                                              mode = "undirected", weighted = TRUE, diag = FALSE)),
-      "3"=igraph::cluster_leading_eigen(igraph::graph.adjacency(as.matrix(MTX),
-                                                                mode = "undirected", weighted = TRUE, diag = FALSE)),
-      "4"=igraph::cluster_infomap(igraph::graph.adjacency(as.matrix(MTX),
-                                                          mode = "directed", weighted = TRUE, diag = FALSE)),
-      "5"=igraph::cluster_walktrap(igraph::graph.adjacency(as.matrix(MTX),
-                                                           mode = "directed", weighted = TRUE, diag = FALSE)),
-      "6"=igraph::cluster_leiden(igraph::graph.adjacency(as.matrix(MTX),
-                                                         mode = "undirected", weighted = TRUE, diag = FALSE),
-                                 objective_function = "modularity")
+      "1"=igraph::cluster_louvain(igraph::graph_from_adjacency_matrix(as.matrix(MTX),
+                                                                      mode = "max", weighted = TRUE, diag = FALSE)),
+      "2"=igraph::cluster_fast_greedy(igraph::graph_from_adjacency_matrix(as.matrix(MTX),
+                                                                          mode = "max", weighted = TRUE, diag = FALSE)),
+      "3"=igraph::cluster_leading_eigen(igraph::graph_from_adjacency_matrix(as.matrix(MTX),
+                                                                            mode = "max", weighted = TRUE, diag = FALSE)),
+      "4"=igraph::cluster_infomap(igraph::graph_from_adjacency_matrix(as.matrix(MTX),
+                                                                      mode = "directed", weighted = TRUE, diag = FALSE)),
+      "5"=igraph::cluster_walktrap(igraph::graph_from_adjacency_matrix(as.matrix(MTX),
+                                                                       mode = "directed", weighted = TRUE, diag = FALSE)),
+      "6"=leidenAlg::leiden.community(igraph::graph_from_adjacency_matrix(as.matrix(MTX),
+                                                                          mode = "directed", weighted = TRUE, diag = FALSE))
     )
   }
 
@@ -468,11 +465,11 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
   for (i in 1:nrow(as.matrix(M))){
     Coordsi<-Coords[(S==M[i])&(coords==1)]
     if (issymm==TRUE) {
-      EVC<-as.matrix(igraph::eigen_centrality(igraph::graph.adjacency(
+      EVC<-as.matrix(igraph::eigen_centrality(igraph::graph_from_adjacency_matrix(
         as.matrix(R[Coordsi,Coordsi]), mode = "undirected",
         weighted = TRUE, diag = FALSE))$vector)
     }else{
-      EVC<-as.matrix(igraph::eigen_centrality(igraph::graph.adjacency(
+      EVC<-as.matrix(igraph::eigen_centrality(igraph::graph_from_adjacency_matrix(
         as.matrix(R[Coordsi,Coordsi]), mode = "directed",
         weighted = TRUE, diag = FALSE))$vector)
     }
@@ -625,11 +622,11 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
     for (i in 1:nrow(as.matrix(M))){
       Coordsi=Coords[(S==M[i])&(coords==1)]
       if (issymm==TRUE) {
-        EVC<-as.matrix(igraph::eigen_centrality(igraph::graph.adjacency(
+        EVC<-as.matrix(igraph::eigen_centrality(igraph::graph_from_adjacency_matrix(
           as.matrix(R[Coordsi,Coordsi]), mode = "undirected",
           weighted = TRUE, diag = FALSE))$vector)
       }else{
-        EVC<-as.matrix(igraph::eigen_centrality(igraph::graph.adjacency(
+        EVC<-as.matrix(igraph::eigen_centrality(igraph::graph_from_adjacency_matrix(
           as.matrix(R[Coordsi,Coordsi]), mode = "directed",
           weighted = TRUE, diag = FALSE))$vector)
       }
@@ -695,7 +692,8 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
 
 ###### PLOT FOR NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (NDA) ######
 
-plot.nda <- function(x,cuts=0.3,interactive=TRUE,edgescale=1.0,labeldist=-1.5,...){
+plot.nda <- function(x,cuts=0.3,interactive=TRUE,edgescale=1.0,labeldist=-1.5,
+                     show_weights=FALSE,...){
   if (methods::is(x,"nda")){
     if (!requireNamespace("igraph", quietly = TRUE)) {
       stop(
@@ -732,32 +730,25 @@ plot.nda <- function(x,cuts=0.3,interactive=TRUE,edgescale=1.0,labeldist=-1.5,..
     nodes[x$membership==0,"color"]<-"#000000"
     colnames(nodes)<-c("id","title","size","color")
     edges<-as.data.frame(igraph::as_edgelist(G))
-    if (igraph::is.directed(G)){
-      edges <- data.frame(
-        from=edges$V1,
-        to=edges$V2,
-        arrows=c("middle"),
-        smooth=c(FALSE),
-        width=(igraph::E(G)$weight)*edgescale,
-        color="#5080b1"
-      )
-    }else{
-      edges <- data.frame(
-        from=edges$V1,
-        to=edges$V2,
-        smooth=c(FALSE),
-        width=(igraph::E(G)$weight)*edgescale,
-        color="#5080b1"
-      )
-    }
+    edges <- data.frame(
+      from=edges$V1,
+      to=edges$V2,
+      arrows=ifelse(igraph::is.directed(G),c("middle"),""),
+      smooth=c(FALSE),
+      label=ifelse(show_weights==TRUE,paste(round(igraph::E(G)$weight,2)),""),
+      width=(igraph::E(G)$weight)*edgescale,
+      color="#5080b1"
+    )
 
     nw <-
       visNetwork::visIgraphLayout(
         visNetwork::visNodes(
           visNetwork::visInteraction(
             visNetwork::visOptions(
-              visNetwork::visNetwork(
-                nodes, edges, height = "1000px", width = "100%"),
+              visNetwork::visEdges(
+                visNetwork::visNetwork(
+                  nodes, edges, height = "1000px", width = "100%"),
+                font = list(size = 6)),
               highlightNearest = TRUE, selectedBy = "label"),
             dragNodes = TRUE,
             dragView = TRUE,
@@ -781,6 +772,7 @@ plot.nda <- function(x,cuts=0.3,interactive=TRUE,edgescale=1.0,labeldist=-1.5,..
     plot(x,...)
   }
 }
+
 
 #SUMMARY FUNCTION FOR NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (NDA)#
 
