@@ -46,7 +46,8 @@ plot.nda <- function(x,cuts=0.3,interactive=TRUE,edgescale=1.0,labeldist=-1.5,
     nodes<-as.data.frame(igraph::V(G)$name)
     nodes$label<-rownames(x$R)
     nodes$size<-igraph::evcent(G)$vector*10+5
-    nodes$color<-grDevices::hsv(x$membership/max(x$membership))
+    nodes$color<-grDevices::hsv(x$membership/max(x$membership),
+                                alpha=0.4)
     nodes[x$membership==0,"color"]<-"#000000"
     colnames(nodes)<-c("id","title","size","color")
     edges<-as.data.frame(igraph::as_edgelist(G))
@@ -85,6 +86,7 @@ plot.nda <- function(x,cuts=0.3,interactive=TRUE,edgescale=1.0,labeldist=-1.5,
       igraph::E(g)$weight<-igraph::E(G)$weight
       igraph::E(g)$size<-igraph::E(G)$weight
       igraph::plot.igraph(g, vertex.label.dist = labeldist,vertex.size=nodes$size,edge.width=(igraph::E(g)$size*5+1)*edgescale,edge.arrow.size=0.2)
+      return(invisible(g))
     }else{
       nw
     }
