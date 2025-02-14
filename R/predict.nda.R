@@ -13,31 +13,7 @@
 ### PREDICT SCORES NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (NDA) ##
 #' @export
 predict.nda <- function(object,  newdata,...) {
-  if (!requireNamespace("stats", quietly = TRUE)) {
-    stop(
-      "Package \"stats\" must be installed to use this function.",
-      call. = FALSE
-    )
-  }
-  if (!requireNamespace("psych", quietly = TRUE)) {
-    stop(
-      "Package \"psych\" must be installed to use this function.",
-      call. = FALSE
-    )
-  }
   if (methods::is(object,"nda")){
-    if (is.null(object$scores)){
-      stop(
-        "The score value of NDA is required.",
-        call. = FALSE
-      )
-    }
-    if (is.null(newdata)){
-      stop(
-        "The newdata is required.",
-        call. = FALSE
-      )
-    }
     Call<-object$Call
     LOADING<-object$loadings
     SCORES<-object$scores
@@ -83,7 +59,5 @@ predict.nda <- function(object,  newdata,...) {
       L<-scale(L,center = center)
     }
     return(L)
-  }else{
-    stats::predict(object,...)
   }
 }

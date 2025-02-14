@@ -15,24 +15,6 @@
 plot.nda <- function(x,cuts=0.3,interactive=TRUE,edgescale=1.0,labeldist=-1.5,
                      show_weights=FALSE,...){
   if (methods::is(x,"nda")){
-    if (!requireNamespace("igraph", quietly = TRUE)) {
-      stop(
-        "Package \"igraph\" must be installed to use this function.",
-        call. = FALSE
-      )
-    }
-    if (!requireNamespace("stats", quietly = TRUE)) {
-      stop(
-        "Package \"stats\" must be installed to use this function.",
-        call. = FALSE
-      )
-    }
-    if (!requireNamespace("visNetwork", quietly = TRUE)) {
-      stop(
-        "Package \"visNetwork\" must be installed to use this function.",
-        call. = FALSE
-      )
-    }
     R2<-G<-nodes<-edges<-NULL
     R2<-x$R
     R2[R2<cuts]<-0
@@ -67,17 +49,17 @@ plot.nda <- function(x,cuts=0.3,interactive=TRUE,edgescale=1.0,labeldist=-1.5,
           visNetwork::visInteraction(
             visNetwork::visOptions(
               visNetwork::visEdges(
-              visNetwork::visNetwork(
-                nodes, edges, height = "1000px", width = "100%"),
-                 font = list(size = 6)),
-                  highlightNearest = TRUE, selectedBy = "label"),
-                  dragNodes = TRUE,
-                  dragView = TRUE,
-                  zoomView = TRUE,
-                  hideEdgesOnDrag = FALSE),physics=FALSE, size=16,
-                  borderWidth = 1,
-                  font=list(face="calibri")),layout = "layout_nicely",
-                  physics = TRUE, type="full"
+                visNetwork::visNetwork(
+                  nodes, edges, height = "1000px", width = "100%"),
+                font = list(size = 6)),
+              highlightNearest = TRUE, selectedBy = "label"),
+            dragNodes = TRUE,
+            dragView = TRUE,
+            zoomView = TRUE,
+            hideEdgesOnDrag = FALSE),physics=FALSE, size=16,
+          borderWidth = 1,
+          font=list(face="calibri")),layout = "layout_nicely",
+        physics = TRUE, type="full"
       )
 
     if (interactive==FALSE){
@@ -90,7 +72,5 @@ plot.nda <- function(x,cuts=0.3,interactive=TRUE,edgescale=1.0,labeldist=-1.5,
     }else{
       nw
     }
-  }else{
-    plot(x,...)
   }
 }

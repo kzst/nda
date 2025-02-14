@@ -17,18 +17,6 @@ predict.ndrlm <- function(object,  newdata, se.fit = FALSE, scale = NULL, df = I
                           level = 0.95, type = c("response", "terms"),
                           terms = NULL, na.action = stats::na.pass,
                           pred.var = 1/weights, weights = 1,...) {
-  if (!requireNamespace("stats", quietly = TRUE)) {
-    stop(
-      "Package \"stats\" must be installed to use this function.",
-      call. = FALSE
-    )
-  }
-  if (!requireNamespace("psych", quietly = TRUE)) {
-    stop(
-      "Package \"psych\" must be installed to use this function.",
-      call. = FALSE
-    )
-  }
   if (methods::is(object,"ndrlm")){
     Call<-object$Call
     fval<-object$fval
@@ -143,10 +131,6 @@ predict.ndrlm <- function(object,  newdata, se.fit = FALSE, scale = NULL, df = I
                                     pred.var = pred.var, weights = weights)
       }
     }
-
     return(prediction)
-
-  }else{
-    stats::predict(object,...)
   }
 }

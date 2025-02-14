@@ -13,18 +13,6 @@
 ###### BIPLOT FOR NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (NDA) ###
 #' @export
 biplot.nda <- function(x, main=NULL,...){
-  if (!requireNamespace("graphics", quietly = TRUE)) {
-    stop(
-      "Package \"graphics\" must be installed to use this function.",
-      call. = FALSE
-    )
-  }
-  if (!requireNamespace("stats", quietly = TRUE)) {
-    stop(
-      "Package \"stats\" must be installed to use this function.",
-      call. = FALSE
-    )
-  }
   if (methods::is(x,"nda")){
     if (is.null(x$scores)){
       stop("Biplot requires component scores. You need to run ndr from the raw data",
@@ -50,7 +38,5 @@ biplot.nda <- function(x, main=NULL,...){
       if(!is.null(main))
         graphics::mtext(main, line = -1.2, outer = TRUE)
     }
-  }else{
-    stats::biplot(x,main,...)
   }
 }

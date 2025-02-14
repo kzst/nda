@@ -13,12 +13,6 @@
 #SUMMARY FUNCTION FOR NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (NDA)#
 #' @export
 summary.nda <- function(object,  digits =  getOption("digits"), ...) {
-  if (!requireNamespace("stats", quietly = TRUE)) {
-    stop(
-      "Package \"stats\" must be installed to use this function.",
-      call. = FALSE
-    )
-  }
   if (methods::is(object,"nda")){
     communality <- object$communality
     loadings <- object$loadings
@@ -41,7 +35,5 @@ summary.nda <- function(object,  digits =  getOption("digits"), ...) {
     }
     return(results)
     print.nda(object)
-  }else{
-    summary(object,...)
   }
 }

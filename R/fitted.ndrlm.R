@@ -13,12 +13,6 @@
 # FITTINGS FOR NETWORK-BASED DIMENSIONALITY REDUCTION AND REGRESSION (NDRLM) ##
 #' @export
 fitted.ndrlm <- function(object,  ...) {
-  if (!requireNamespace("stats", quietly = TRUE)) {
-    stop(
-      "Package \"stats\" must be installed to use this function.",
-      call. = FALSE
-    )
-  }
   if (methods::is(object,"ndrlm")){
     Call<-object$Call
     fval<-object$fval
@@ -92,7 +86,5 @@ fitted.ndrlm <- function(object,  ...) {
     }
     FITTED<-FITTED[,1:length(fits)]
     return(FITTED)
-  }else{
-    stats::fitted(object,...)
   }
 }

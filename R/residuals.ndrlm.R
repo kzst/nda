@@ -13,12 +13,6 @@
 # RESIDUALS FOR NETWORK-BASED DIMENSIONALITY REDUCTION AND REGRESSION (NDRLM) #
 #' @export
 residuals.ndrlm <- function(object,  ...) {
-  if (!requireNamespace("stats", quietly = TRUE)) {
-    stop(
-      "Package \"stats\" must be installed to use this function.",
-      call. = FALSE
-    )
-  }
   if (methods::is(object,"ndrlm")){
     Call<-object$Call
     fval<-object$fval
@@ -92,7 +86,5 @@ residuals.ndrlm <- function(object,  ...) {
     }
     RESIDUALS<-RESIDUALS[,1:length(fits)]
     return(RESIDUALS)
-  }else{
-    stats::residuals(object,...)
   }
 }

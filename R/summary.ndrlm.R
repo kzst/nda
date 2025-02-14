@@ -13,12 +13,6 @@
 ## SUMMARY FOR NETWORK-BASED DIMENSIONALITY REDUCTION AND REGRESSION (NDRLM) ##
 #' @export
 summary.ndrlm <- function(object,  digits =  getOption("digits"), ...) {
-  if (!requireNamespace("stats", quietly = TRUE)) {
-    stop(
-      "Package \"stats\" must be installed to use this function.",
-      call. = FALSE
-    )
-  }
   if (methods::is(object,"ndrlm")){
     Call<-object$Call
     target<-object$target
@@ -119,7 +113,5 @@ summary.ndrlm <- function(object,  digits =  getOption("digits"), ...) {
                                          list(NULL))),
                     fn=fn)
     print.ndrlm(object)
-  }else{
-    summary(object,...)
   }
 }

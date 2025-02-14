@@ -13,12 +13,6 @@
 # PRINT FUNCTION FOR NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (NDA)#
 #' @export
 print.nda <- function(x,  digits =  getOption("digits"), ...) {
-  if (!requireNamespace("stats", quietly = TRUE)) {
-    stop(
-      "Package \"stats\" must be installed to use this function.",
-      call. = FALSE
-    )
-  }
   if (methods::is(x,"nda")){
     communality <- x$communality
     loadings <- x$loadings
@@ -40,7 +34,5 @@ print.nda <- function(x,  digits =  getOption("digits"), ...) {
       cat("\n\nCorrelation matrix of factor scores:\n")
       print(stats::cor(scores),digits = digits, ...)
     }
-  }else{
-    print(x,...)
   }
 }

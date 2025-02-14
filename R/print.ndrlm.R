@@ -13,12 +13,6 @@
 ## PRINT FOR NETWORK-BASED DIMENSIONALITY REDUCTION AND REGRESSION (NDRLM) ##
 #' @export
 print.ndrlm <- function(x, digits = getOption("digits"), ...) {
-  if (!requireNamespace("stats", quietly = TRUE)) {
-    stop(
-      "Package \"stats\" must be installed to use this function.",
-      call. = FALSE
-    )
-  }
   if (methods::is(x,"ndrlm")){
     Call<-x$Call
     target<-x$target
@@ -143,7 +137,5 @@ print.ndrlm <- function(x, digits = getOption("digits"), ...) {
       cat("\nFitting for variable ",colnames(fits[[i]]$model)[1])
       print(lm.beta::summary.lm.beta(lm.beta::lm.beta(fits[[i]])))
     }
-  }else{
-    print(x,...)
   }
 }

@@ -14,30 +14,6 @@
 #' @export
 plot.ndrlm <- function(x,sig=0.05,interactive=FALSE,...){
   if (methods::is(x,"ndrlm")){
-    if (!requireNamespace("igraph", quietly = TRUE)) {
-      stop(
-        "Package \"igraph\" must be installed to use this function.",
-        call. = FALSE
-      )
-    }
-    if (!requireNamespace("stats", quietly = TRUE)) {
-      stop(
-        "Package \"stats\" must be installed to use this function.",
-        call. = FALSE
-      )
-    }
-    if (!requireNamespace("visNetwork", quietly = TRUE)) {
-      stop(
-        "Package \"visNetwork\" must be installed to use this function.",
-        call. = FALSE
-      )
-    }
-    if (!requireNamespace("lm.beta", quietly = TRUE)) {
-      stop(
-        "Package \"lm.beta\" must be installed to use this function.",
-        call. = FALSE
-      )
-    }
     latents<-x$latents
     extra_vars.X<-x$extra_vars.X
     extra_vars.Y<-x$extra_vars.Y
@@ -63,11 +39,11 @@ plot.ndrlm <- function(x,sig=0.05,interactive=FALSE,...){
     node_ID<-1:(nY+nSout+nSin+nX)
     node_label<-c(colnames(x$Y),
                   unlist(ifelse(latents %in% c("out","both"),
-                    list(paste("NDAout",1:x$NDAout$factors,sep="")),
-                    list(NULL))),
+                                list(paste("NDAout",1:x$NDAout$factors,sep="")),
+                                list(NULL))),
                   unlist(ifelse(latents %in% c("in","both"),
-                    list(paste("NDAin",1:x$NDAin$factors,sep="")),
-                    list(NULL))),colnames(x$X))
+                                list(paste("NDAin",1:x$NDAin$factors,sep="")),
+                                list(NULL))),colnames(x$X))
 
     node_shape<-c(rep("rectangle",nY),
                   unlist(ifelse(latents %in% c("out","both"),
@@ -79,17 +55,17 @@ plot.ndrlm <- function(x,sig=0.05,interactive=FALSE,...){
                   rep("rectangle",nX))
 
     node_color<-c(unlist(ifelse(latents %in% c("out","both"),
-                                 list(x$NDAout$membership),
-                                 list(rep(0,nY)))),
-                   unlist(ifelse(latents %in% c("out","both"),
-                                 list(1:nSout),
-                                 list(NULL))),
-                   unlist(ifelse(latents %in% c("in","both"),
-                                 list(1:nSin),
-                                 list(NULL))),
-                   unlist(ifelse(latents %in% c("in","both"),
-                                 list(x$NDAin$membership),
-                                 list(rep(0,nX)))))
+                                list(x$NDAout$membership),
+                                list(rep(0,nY)))),
+                  unlist(ifelse(latents %in% c("out","both"),
+                                list(1:nSout),
+                                list(NULL))),
+                  unlist(ifelse(latents %in% c("in","both"),
+                                list(1:nSin),
+                                list(NULL))),
+                  unlist(ifelse(latents %in% c("in","both"),
+                                list(x$NDAin$membership),
+                                list(rep(0,nX)))))
     nodes<-data.frame(id=node_ID,label=node_label,shape=node_shape,
                       color=node_color)
     edges <- data.frame(matrix(ncol = 6, nrow = 0))
@@ -113,7 +89,7 @@ plot.ndrlm <- function(x,sig=0.05,interactive=FALSE,...){
         indep<-cbind(x$NDAin$scores,x$X[,x$NDAin$membership==0])
         indep<-as.data.frame(indep)
         colnames(indep)<-c(paste("NDAin",1:x$NDAin$factors,sep=""),
-                         colnames(x$X)[x$NDAin$membership==0])
+                           colnames(x$X)[x$NDAin$membership==0])
 
 
 
@@ -214,8 +190,8 @@ plot.ndrlm <- function(x,sig=0.05,interactive=FALSE,...){
     }
 
     G<-igraph::graph_from_data_frame(edges,
-                             directed=TRUE,
-                             vertices=nodes)
+                                     directed=TRUE,
+                                     vertices=nodes)
 
     if (interactive==TRUE){
       edges$arrows<-ifelse(igraph::is.directed(G),c("to"),"")
@@ -251,13 +227,10 @@ plot.ndrlm <- function(x,sig=0.05,interactive=FALSE,...){
 
     }else{
       igraph::V(G)$color<-grDevices::hsv((node_color+1)/max(node_color+1),
-                                  alpha=0.4)
+                                         alpha=0.4)
       igraph::plot.igraph(G,layout=cust_layout,edge.width=abs(igraph::E(G)$weight)*2,
-           edge.label=round(igraph::E(G)$weight,2),vertex.size=30)
+                          edge.label=round(igraph::E(G)$weight,2),vertex.size=30)
       return(invisible(G))
     }
-
-  }else{
-    plot(x,...)
   }
 }
