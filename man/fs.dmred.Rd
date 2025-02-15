@@ -69,7 +69,7 @@ print(colnames(PCA$dropped_com))
 # List of retained indicators
 print(colnames(PCA$retained_DF))
 
-
+\dontrun{
 # Principal Component Analysis (PCA) of correlation matrix
 
 pca<-principal(cor(data,method="spearman"),nfactors=2,covar=TRUE)
@@ -81,7 +81,7 @@ com_comm<-0.20 # Minimal common communality value
 
 PCA<-fs.dimred(pca,cor(data,method="spearman"),min_comm,com_comm)
 PCA
-
+}
 }
 
 \keyword{multivariate}

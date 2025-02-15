@@ -8,7 +8,7 @@ The main function of Generalized Network-based Dimensionality Reduction and Anal
 \usage{
 ndr(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,null_model_type=4,
 mod_mode=6,min_evalue=0,min_communality=0,com_communalities=0,use_rotation=FALSE,
-rotation="oblimin",weight=NULL)
+rotation="oblimin",weight=NULL,seed=NULL)
 
 }
 \arguments{
@@ -32,6 +32,7 @@ rotation="oblimin",weight=NULL)
   \item{use_rotation}{FALSE no rotation (default), TRUE the rotation is used.}
   \item{rotation}{"none", "varimax", "quartimax", "promax", "oblimin", "simplimax", and "cluster" are possible rotations/transformations of the solution. "oblimin" is the default, if use_rotation is TRUE.}
   \item{weight}{The weights of columns. The defalt is NULL (no weights).}
+  \item{seed}{default seed value (default=NULL, no seed)}
 }
 \details{
 NDA both works on low and high simple size datasets. If min_evalue=min_communality=com_communalities=0 than there is no feature selection.
@@ -68,7 +69,7 @@ e-mail*: kosztyan.zsolt@gtk.uni-pannon.hu
 
 \examples{
 
-# Dimension reduction
+# Dimension reduction without using any hyperparameters
 
 data(swiss)
 df<-swiss
@@ -77,13 +78,45 @@ summary(p)
 plot(p)
 biplot(p)
 
-# Data reduction
+# Dimension reduction with using hyperparameters
+# min_R=0.1 # The mininal square correlation must be grater than 0.1
+
+p<-ndr(df,min_R = 0.1)
+summary(p)
+plot(p)
+
+# min_evalue=0.1 # Minimal evector centalities must be greater than 0.1
+
+p<-ndr(df,min_evalue = 0.1)
+summary(p)
+plot(p)
+
+# minimal and common communality value must be greater than 0.25
+
+p<-ndr(df,min_communality = 0.25,
+ com_communalities = 0.25)
+
+# Print factor matrix
+cor(p$scores)
+plot(p)
+
+# Use factor rotation
+
+p<-ndr(df,min_communality = 0.25,
+ com_communalities = 0.25,use_rotation=TRUE)
+
+# Print factor matrix
+cor(p$scores)
+biplot(p)
+
+# Data reduction - clustering
 # Distance is Euclidean's distance
 # covar=TRUE means only the distance matrix is considered.
 
 q<-ndr(1-normalize(as.matrix(dist(df))),covar=TRUE)
 summary(q)
 plot(q)
+
 }
 
 \keyword{multivariate}

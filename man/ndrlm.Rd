@@ -115,19 +115,53 @@ e-mail*: kosztyan.zsolt@gtk.uni-pannon.hu
 
 \examples{
 
-# Using NDRLM with curve fitting optimization
+# Using NDRLM with optimized fitting
 
 X<-freeny.x
 Y<-freeny.y
 NDRLM<-ndrlm(Y,X)
 summary(NDRLM)
 
+\dontrun{
+# Using Leiden's modularity for grouping variables
+
+X<-freeny.x
+Y<-freeny.y
+NDRLM<-ndrlm(Y,X,mod_mode=6)
+plot(NDRLM)
+
+# Using Spearman's correlation
+
+NDRLM<-ndrlm(Y,X,cor_method=2)
+summary(NDRLM)
+
+# Using greater population and generations
+
+NDRLM<-ndrlm(Y,X,popsize=52,generations=40)
+summary(NDRLM)
+
+# No latent variables
+NDRLM<-ndrlm(Y,X,latents="none")
+plot(NDRLM)
+
+# In-out model
+library(lavaan)
+df<-PoliticalDemocracy # Data of Political Democracy
+
+dem<-PoliticalDemocracy[,c(1:8)]
+ind60<-PoliticalDemocracy[,-c(1:8)]
+
+NBSEM<-ndrlm(dem,ind60,latents = "both",seed = 2)
+plot(NBSEM)
+}
+
 # Using NDRLM without fitting optimization
 
 NDRLM<-ndrlm(Y,X,optimize=FALSE)
 summary(NDRLM)
-
+plot(NDRLM)
 }
+
 
 \keyword{multivariate}
 \keyword{nonparametric}

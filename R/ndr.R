@@ -8,14 +8,14 @@
 #              University of Pannonia, Hungary                                #
 #              kosztyan.zsolt@gtk.uni-pannon.hu                               #
 #                                                                             #
-# Last modified: November 2024                                                #
+# Last modified: February 2025                                                #
 #-----------------------------------------------------------------------------#
 #### GENERALIZED NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (GNDA) ###
 #' @export
 ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
               null_model_type=4,mod_mode=6,min_evalue=0,
               min_communality=0,com_communalities=0,use_rotation=FALSE,
-              rotation="oblimin",weight=NULL){
+              rotation="oblimin",weight=NULL,seed=NULL){
 
   cl<-match.call()
   if (!requireNamespace("energy", quietly = TRUE)) {
@@ -59,6 +59,10 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
       "The data should be numeric matrix or data.frame!",
       call. = FALSE
     )
+  }
+  if (!is.null(seed))
+  {
+    set.seed(seed)
   }
   if (is.null(weight)){
     weight=rep(1,ncol(r))
@@ -154,8 +158,9 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
                                                           mode = "undirected", weighted = TRUE, diag = FALSE)),
       "5"=igraph::cluster_walktrap(igraph::graph_from_adjacency_matrix(as.matrix(MTX),
                                                            mode = "undirected", weighted = TRUE, diag = FALSE)),
-      "6"=leidenAlg::leiden.community(igraph::graph_from_adjacency_matrix(as.matrix(MTX),
-                                                              mode = "undirected", weighted = TRUE, diag = FALSE))
+      "6"=if (inherits(try(leidenAlg::leiden.community(igraph::graph_from_adjacency_matrix(as.matrix(MTX),mode = "undirected", weighted = TRUE, diag = FALSE)),silent = TRUE),"try-error"))
+      {igraph::cluster_leiden(igraph::graph_from_adjacency_matrix(as.matrix(MTX),mode = "undirected", weighted = TRUE, diag = FALSE),objective_function = "modularity")}
+      else{leidenAlg::leiden.community(igraph::graph_from_adjacency_matrix(as.matrix(MTX),mode = "undirected", weighted = TRUE, diag = FALSE))}
     )
   }else{
     modular=switch(
@@ -170,14 +175,13 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
                                                           mode = "directed", weighted = TRUE, diag = FALSE)),
       "5"=igraph::cluster_walktrap(igraph::graph_from_adjacency_matrix(as.matrix(MTX),
                                                            mode = "directed", weighted = TRUE, diag = FALSE)),
-      "6"=leidenAlg::leiden.community(igraph::graph_from_adjacency_matrix(as.matrix(MTX),
-                                                                      mode = "directed", weighted = TRUE, diag = FALSE))
+      "6"=if (inherits(try(leidenAlg::leiden.community(igraph::graph_from_adjacency_matrix(as.matrix(MTX),mode = "directed", weighted = TRUE, diag = FALSE)),silent = TRUE),"try-error"))
+      {igraph::cluster_leiden(igraph::as.undirected(igraph::graph_from_adjacency_matrix(as.matrix(MTX),mode = "directed", weighted = TRUE, diag = FALSE)),objective_function = "modularity")}
+      else{leidenAlg::leiden.community(igraph::graph_from_adjacency_matrix(as.matrix(MTX),mode = "directed", weighted = TRUE, diag = FALSE))}
     )
   }
 
   S<-as.numeric(modular$membership)
-
-  # igraph::sizes(modular)
 
   for (i in 1: max(S)){
     if (nrow(as.matrix(coords[S==i]))<min_comm){
@@ -225,8 +229,11 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
         weighted = TRUE, diag = FALSE))$vector)
     }
     if ((nrow(as.matrix(EVC[EVC>min_evalue]))>2)&(nrow(EVC)>2)){
-      L[,i]<-as.matrix(rowSums(r[,
-                                 Coordsi[EVC>min_evalue]] * EVC[EVC>min_evalue]))
+      L[,i]<-if (inherits(try(as.matrix(rowSums(r[,
+                                 Coordsi[EVC>min_evalue]] * EVC[EVC>min_evalue])),
+                              silent = TRUE),"try-error")) {as.matrix(rowSums(r[,
+                           Coordsi[EVC>min_evalue]] %*% EVC[EVC>min_evalue]))}
+      else{as.matrix(rowSums(r[,Coordsi[EVC>min_evalue]] * EVC[EVC>min_evalue]))}
       coords[Coordsi[EVC<=min_evalue]]<-0
       coords[Coordsi[EVC<=min_evalue]]<-0
       S[Coordsi[EVC<=min_evalue]]<-0
@@ -296,7 +303,11 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
         EVC<-EVCs[[i]]
         EVC<-EVC[COM>min_communality]
         EVCs[[i]]<-EVC
-        L[,i]<-as.matrix(rowSums(r[,Coordsi[COM>min_communality]] * EVC))
+
+        L[,i]<-if (inherits(try(as.matrix(rowSums(r[,Coordsi[COM>min_communality]] * EVC)),silent = TRUE),"try-error"))
+        {as.matrix(rowSums(r[,Coordsi[COM>min_communality]] %*% EVC))}else{
+          as.matrix(rowSums(r[,Coordsi[COM>min_communality]] * EVC))
+        }
       }else{
         EVC<-EVCs[[i]]
         L[,i]<-if (inherits(try(as.matrix(rowSums(r[,Coordsi] * EVC)),silent = TRUE),"try-error"))

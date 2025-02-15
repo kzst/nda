@@ -225,9 +225,11 @@ ndrlm<-function(Y,X,latents="in",dircon=FALSE,optimize=TRUE,
         colnames(data)[1]<-colnames(dep)[i]
         colnames(data)[-1]<-colnames(indep)
         data<-as.data.frame(data)
-        fit<-stats::lm(str2lang(paste(colnames(data)[1],"~",
-                                      gsub(", ","+",
-                                           toString(colnames(data)[-1])))),data)
+        fit<-stats::lm(str2lang(paste(paste("`",colnames(data)[1],"`",sep=""),"~",
+                               gsub(", ","+",
+                                    toString(
+                                      paste('`',
+                                            colnames(data)[-1],'`',sep=""))))),data)
         res[i]<-switch(target,
                        "adj.r.square" = stats::summary.lm(fit)$adj.r.squared,
                        "r.sqauare" = stats::summary.lm(fit)$r.squared,
@@ -392,9 +394,11 @@ ndrlm<-function(Y,X,latents="in",dircon=FALSE,optimize=TRUE,
           colnames(data)[1]<-colnames(dep)[i]
           colnames(data)[-1]<-colnames(indep)
           data<-as.data.frame(data)
-          fit<-stats::lm(str2lang(paste(colnames(data)[1],"~",
-                                        gsub(", ","+",
-                                             toString(colnames(data)[-1])))),data)
+          fit<-stats::lm(str2lang(paste(paste("`",colnames(data)[1],"`",sep=""),"~",
+                                 gsub(", ","+",
+                                      toString(
+                                        paste('`',
+                                              colnames(data)[-1],'`',sep=""))))),data)
 
           fits[[i]]<-fit
 
@@ -520,9 +524,11 @@ ndrlm<-function(Y,X,latents="in",dircon=FALSE,optimize=TRUE,
       colnames(data)[1]<-colnames(dep)[i]
       colnames(data)[-1]<-colnames(indep)
       data<-as.data.frame(data)
-      fit<-stats::lm(str2lang(paste(colnames(data)[1],"~",
+      fit<-stats::lm(str2lang(paste(paste("`",colnames(data)[1],"`",sep=""),"~",
                                     gsub(", ","+",
-                                         toString(colnames(data)[-1])))),data)
+                                         toString(
+                                           paste('`',
+                                                 colnames(data)[-1],'`',sep=""))))),data)
 
       fits[[i]]<-fit
     }
