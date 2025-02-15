@@ -20,6 +20,10 @@ predict.ndrlm <- function(object,  newdata, se.fit = FALSE, scale = NULL, df = I
   if (methods::is(object,"ndrlm")){
     Call<-object$Call
     fval<-object$fval
+    seed<-object$seed
+    if (!is.null(seed)){
+      set.seed(seed)
+    }
     pareto<-object$pareto
     X<-object$X
     Y<-object$Y

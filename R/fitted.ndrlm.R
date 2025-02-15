@@ -17,6 +17,10 @@ fitted.ndrlm <- function(object,  ...) {
     Call<-object$Call
     fval<-object$fval
     pareto<-object$pareto
+    seed<-object$seed
+    if (!is.null(seed)){
+      set.seed(seed)
+    }
     X<-object$X
     Y<-object$Y
     latents<-object$latents

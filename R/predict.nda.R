@@ -24,6 +24,10 @@ predict.nda <- function(object,  newdata,...) {
     factors<-object$factors
     use_rotation<-object$use_rotation
     rotation<-object$rotation
+    seed<-object$seed
+    if (!is.null(seed)){
+      set.seed(seed)
+    }
     if (length(membership)!=ncol(newdata)){
       stop(
         "The columns of newdata and the original date must be same.",

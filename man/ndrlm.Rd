@@ -66,7 +66,6 @@ ndrlm(Y,X,latents="in",dircon=FALSE,optimize=TRUE,
   NDRLM is a variable fitting with feature selection based on the tunes of GNDA method with NSGA-II algorithm for parameter fittings.
 }
 \value{
-\item{Call}{Callback function}
 \item{fval}{Objective function for fitting}
 \item{target}{Target performance measures. The possible target measure are "adj.r.square" = adjusted R  square (default), "r.sqauare" = R square, "MAE" = mean absolute error, "MAPE" = mean absolute percentage error, "MASE" = mean absolute scaled error ,"MSE"= mean square error,"RMSE" = root mean square error}
 \item{hyperparams}{optimized hyperparameters}
@@ -98,7 +97,9 @@ minimal square correlation between indicators (used in \code{\link{ndr}})}
 \item{extra_vars.Y}{Logic variable. If direct connection (dircon=TRUE) is allowed not only the latent but the excluded output variables are analyized in the linear models as extra input variables.}
 \item{dircon_X}{The list of input variables which are directly connected to output variables.}
 \item{dircon_Y}{The list of output variables which are directly connected to output variables.}
-\item{fn}{Function (regression) name: NDLM}
+\item{seed}{applied seed value (default=NULL, no seed)}
+\item{fn}{Function (regression) name: NDRLM}
+\item{Call}{Callback function}
 }
 
 \references{
@@ -115,14 +116,19 @@ e-mail*: kosztyan.zsolt@gtk.uni-pannon.hu
 
 \examples{
 
-# Using NDRLM with optimized fitting
-
+# Using NDRLM without fitting optimization
 X<-freeny.x
 Y<-freeny.y
+NDRLM<-ndrlm(Y,X,optimize=FALSE)
+summary(NDRLM)
+plot(NDRLM)
+
+\dontrun{
+# Using NDRLM with optimized fitting
+
 NDRLM<-ndrlm(Y,X)
 summary(NDRLM)
 
-\dontrun{
 # Using Leiden's modularity for grouping variables
 
 X<-freeny.x
@@ -155,11 +161,7 @@ NBSEM<-ndrlm(dem,ind60,latents = "both",seed = 2)
 plot(NBSEM)
 }
 
-# Using NDRLM without fitting optimization
 
-NDRLM<-ndrlm(Y,X,optimize=FALSE)
-summary(NDRLM)
-plot(NDRLM)
 }
 
 

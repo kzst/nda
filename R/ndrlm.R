@@ -577,6 +577,7 @@ ndrlm<-function(Y,X,latents="in",dircon=FALSE,optimize=TRUE,
       P$dircon_Y<-colnames(dropped_Y)
     }
   }
+  P$seed<-seed
   P$fn<-"NDRLM"
   class(P)<-c("ndrlm","list")
   return(P)

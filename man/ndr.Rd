@@ -52,6 +52,7 @@ NDA both works on low and high simple size datasets. If min_evalue=min_communali
 \item{use_rotation}{FALSE no rotation (default), TRUE the rotation is used.}
 \item{rotation}{"none", "varimax", "quartimax", "promax", "oblimin", "simplimax", and "cluster" are possible rotations/transformations of the solution. "oblimin" is the default, if use_rotation is TRUE.}
 \item{fn}{Factor name: NDA}
+\item{seed}{applied seed value (default=NULL, no seed)}
 \item{Call}{Callback function}
 }
 

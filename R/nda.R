@@ -719,6 +719,7 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
   P$use_rotation<-use_rotation
   P$rotation<-rotation
   P$fn<-"NDA"
+  P$seed<-seed
   P$Call<-cl
   class(P) <- c("nda","list")
   return(P)
@@ -1596,6 +1597,7 @@ ndrlm<-function(Y,X,latents="in",dircon=FALSE,optimize=TRUE,
       P$dircon_Y<-colnames(dropped_Y)
     }
   }
+  P$seed<-seed
   P$fn<-"NDRLM"
   class(P)<-c("ndrlm","list")
   return(P)
@@ -2153,6 +2155,10 @@ predict.nda <- function(object,  newdata,...) {
     factors<-object$factors
     use_rotation<-object$use_rotation
     rotation<-object$rotation
+    seed<-object$seed
+    if (!is.null(seed)){
+      set.seed(seed)
+    }
     if (length(membership)!=ncol(newdata)){
       stop(
         "The columns of newdata and the original date must be same.",
@@ -2201,6 +2207,10 @@ predict.ndrlm <- function(object,  newdata, se.fit = FALSE, scale = NULL, df = I
   if (methods::is(object,"ndrlm")){
     Call<-object$Call
     fval<-object$fval
+    seed<-object$seed
+    if (!is.null(seed)){
+      set.seed(seed)
+    }
     pareto<-object$pareto
     X<-object$X
     Y<-object$Y
@@ -2315,3 +2325,4 @@ predict.ndrlm <- function(object,  newdata, se.fit = FALSE, scale = NULL, df = I
     return(prediction)
   }
 }
+

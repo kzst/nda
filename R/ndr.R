@@ -455,6 +455,7 @@ ndr<-function(r,covar=FALSE,cor_method=1,cor_type=1,min_R=0,min_comm=2,Gamma=1,
   P$use_rotation<-use_rotation
   P$rotation<-rotation
   P$fn<-"NDA"
+  P$seed<-seed
   P$Call<-cl
   class(P) <- c("nda","list")
   return(P)
