@@ -137,6 +137,11 @@ Y<-freeny.y
 NDRLM<-ndrlm(Y,X,mod_mode=6)
 plot(NDRLM)
 
+# Using relative weights
+
+NDRLM<-ndrlm(Y,X,mod_mode=6,rel_weight=TRUE)
+plot(NDRLM)
+
 # Using Spearman's correlation
 
 NDRLM<-ndrlm(Y,X,cor_method=2)
