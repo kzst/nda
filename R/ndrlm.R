@@ -13,7 +13,7 @@
 ### GENERALIZED NETWORK-BASED DIMENSIONALITY REDUCTION AND REGRESSION (GNDR) ##
 #' @export
 ndrlm<-function(Y,X,latents="in",dircon=FALSE,optimize=TRUE,
-                target="adj.r.square",
+                target="adj.r.square",rel_weight=FALSE,
                 cor_method=1,
                 cor_type=1,min_comm=2,Gamma=1,
                 null_model_type=4,mod_mode=1,use_rotation=FALSE,
@@ -50,7 +50,12 @@ ndrlm<-function(Y,X,latents="in",dircon=FALSE,optimize=TRUE,
   weight.Y<-rep(1,ncol(Y))
   latent.X<-c(0,0,0,0)
   latent.Y<-c(0,0,0,0)
-
+  if (rel_weight){
+    lower.bounds.x[lower.bounds.x<0]<-0
+    lower.bounds.y[lower.bounds.y<0]<-0
+    upper.bounds.x[upper.bounds.x<0]<-0
+    upper.bounds.y[upper.bounds.y<0]<-0
+  }
   if (("in" %in% latents)==FALSE){ # Pareto-optimiality can be found,
     pareto=FALSE         #  if there are only latent-independent variables
   }
@@ -281,10 +286,16 @@ ndrlm<-function(Y,X,latents="in",dircon=FALSE,optimize=TRUE,
       hyperparams[is.na(hyperparams)]<-0
       if ("in" %in% latents){
         weight.X<-hyperparams[1:ncol(X)]
+        if (rel_weight){
+          weight.X<-weight.X*ncol(X)/sum(weight.X)
+        }
         params.X<-hyperparams[-c(1:ncol(X))]
       }else{
         if ("out" %in% latents){
           weight.Y<-hyperparams[1:ncol(Y)]
+          if (rel_weight){
+            weight.Y<-weight.Y*ncol(Y)/sum(weight.Y)
+          }
           params.Y<-hyperparams[-c(1:ncol(Y))]
         }else{
           if ("both" %in% latents){
@@ -292,6 +303,10 @@ ndrlm<-function(Y,X,latents="in",dircon=FALSE,optimize=TRUE,
             params.X<-hyperparams[(ncol(X)+1):(ncol(X)+4)]
             weight.Y<-hyperparams[(ncol(X)+5):(ncol(X)+4+ncol(Y))]
             params.Y<-hyperparams[(ncol(X)+5+ncol(Y)):(ncol(X)+4+ncol(Y)+4)]
+            if (rel_weight){
+              weight.X<-weight.X*ncol(X)/sum(weight.X)
+              weight.Y<-weight.Y*ncol(Y)/sum(weight.Y)
+            }
           }
         }
       }
@@ -420,10 +435,16 @@ ndrlm<-function(Y,X,latents="in",dircon=FALSE,optimize=TRUE,
 
     if ("in" %in% latents){
       weight.X<-hyperparams[1:ncol(X)]
+      if (rel_weight){
+        weight.X<-weight.X*ncol(X)/sum(weight.X)
+      }
       params.X<-hyperparams[-c(1:ncol(X))]
     }else{
       if ("out" %in% latents){
         weight.Y<-hyperparams[1:ncol(Y)]
+        if (rel_weight){
+          weight.Y<-weight.Y*ncol(Y)/sum(weight.Y)
+        }
         params.Y<-hyperparams[-c(1:ncol(Y))]
       }else{
         if ("both" %in% latents){
@@ -431,6 +452,10 @@ ndrlm<-function(Y,X,latents="in",dircon=FALSE,optimize=TRUE,
           params.X<-hyperparams[(ncol(X)+1):(ncol(X)+4)]
           weight.Y<-hyperparams[(ncol(X)+5):(ncol(X)+4+ncol(Y))]
           params.Y<-hyperparams[(ncol(X)+5+ncol(Y)):(ncol(X)+4+ncol(Y)+4)]
+          if (rel_weight){
+            weight.X<-weight.X*ncol(X)/sum(weight.X)
+            weight.Y<-weight.Y*ncol(Y)/sum(weight.Y)
+          }
         }
       }
     }

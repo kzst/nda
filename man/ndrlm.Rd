@@ -7,7 +7,7 @@ The main function of Generalized Network-based Dimensionality Reduction and Regr
 }
 \usage{
 ndrlm(Y,X,latents="in",dircon=FALSE,optimize=TRUE,
-                target="adj.r.square",
+                target="adj.r.square",rel_weight=FALSE,
                 cor_method=1,
                 cor_type=1,min_comm=2,Gamma=1,
                 null_model_type=4,mod_mode=1,use_rotation=FALSE,
@@ -31,6 +31,7 @@ ndrlm(Y,X,latents="in",dircon=FALSE,optimize=TRUE,
   \item{dircon}{Wether enable or disable direct connection between input and output variables (default=FALSE)}
   \item{optimize}{Optimization of fittings (default=TRUE)}
   \item{target}{Target performance measures. The possible target measure are "adj.r.square" = adjusted R  square (default), "r.sqauare" = R square, "MAE" = mean absolute error, "MAPE" = mean absolute percentage error, "MASE" = mean absolute scaled error ,"MSE"= mean square error,"RMSE" = root mean square error}
+  \item{rel_weight}{Use relative weights. In this case, all weights should be non-negative. (default=FALSE)}
   \item{cor_method}{Correlation method (optional).
 '1' Pearson's correlation (default),
 '2' Spearman's correlation, '3' Kendall's correlation,
