@@ -35,9 +35,9 @@ ndrlm<-function(Y,X,latents="in",dircon=FALSE,optimize=TRUE,
       call. = FALSE
     )
   }
-  if (!(target %in% c("adj.r.square","r.sqauare","MAE","MAPE","MASE","MSE","RMSE"))){
+  if (!(target %in% c("adj.r.square","r.square","MAE","MAPE","MASE","MSE","RMSE","AIC","BIC"))){
     stop(
-      "Target must be either adj.r.square, r.sqauare, MAE, MAPE, MASE, MSE, or RMSE",
+      "Target must be one of: adj.r.square, r.square, MAE, MAPE, MASE, MSE, RMSE, AIC, or BIC",
       call. = FALSE
     )
   }
@@ -136,12 +136,14 @@ ndrlm<-function(Y,X,latents="in",dircon=FALSE,optimize=TRUE,
     }
     errorvalue<-switch(target,
                        "adj.r.square" = 0,
-                       "r.sqauare" = 0,
-                       "MAE" =Inf,
+                       "r.square" = 0,
+                       "MAE" = Inf,
                        "MAPE" = Inf,
                        "MASE" = Inf,
                        "MSE" = Inf,
-                       "RMSE" = Inf
+                       "RMSE" = Inf,
+                       "AIC" = Inf,
+                       "BIC" = Inf
     )
     if (pareto==TRUE){
       res<-rep(errorvalue,ncol(Y))
@@ -237,12 +239,14 @@ ndrlm<-function(Y,X,latents="in",dircon=FALSE,optimize=TRUE,
                                             colnames(data)[-1],'`',sep=""))))),data)
         res[i]<-switch(target,
                        "adj.r.square" = stats::summary.lm(fit)$adj.r.squared,
-                       "r.sqauare" = stats::summary.lm(fit)$r.squared,
+                       "r.square" = stats::summary.lm(fit)$r.squared,
                        "MAE" = Metrics::mae(data[,1],stats::fitted(fit)),
                        "MAPE" = Metrics::mape(data[,1],stats::fitted(fit)),
                        "MASE" = Metrics::mase(data[,1],stats::fitted(fit)),
                        "MSE" = Metrics::mse(data[,1],stats::fitted(fit)),
-                       "RMSE" = Metrics::rmse(data[,1],stats::fitted(fit))
+                       "RMSE" = Metrics::rmse(data[,1],stats::fitted(fit)),
+                       "AIC" = stats::AIC(fit),
+                       "BIC" = stats::BIC(fit)
         )
       }
       if (pareto==TRUE){

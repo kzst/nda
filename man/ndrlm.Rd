@@ -30,7 +30,7 @@ ndrlm(Y,X,latents="in",dircon=FALSE,optimize=TRUE,
   \item{latents}{The employs of latent variables: "in" employs latent-independent variables (default); "out" employs latent-dependent variables; "both" employs both latent-dependent and latent independent variables; "none" do not employs latent variable (= multiple regression)}
   \item{dircon}{Wether enable or disable direct connection between input and output variables (default=FALSE)}
   \item{optimize}{Optimization of fittings (default=TRUE)}
-  \item{target}{Target performance measures. The possible target measure are "adj.r.square" = adjusted R  square (default), "r.sqauare" = R square, "MAE" = mean absolute error, "MAPE" = mean absolute percentage error, "MASE" = mean absolute scaled error ,"MSE"= mean square error,"RMSE" = root mean square error}
+  \item{target}{Target performance measures. The possible target measure are "adj.r.square" = adjusted R  square (default), "r.square" = R square, "MAE" = mean absolute error, "MAPE" = mean absolute percentage error, "MASE" = mean absolute scaled error ,"MSE"= mean square error,"RMSE" = root mean square error, "AIC" = Akaike Information Criterion, "BIC" = Bayesian Information Criterion}
   \item{rel_weight}{Use relative weights. In this case, all weights should be non-negative. (default=FALSE)}
   \item{cor_method}{Correlation method (optional).
 '1' Pearson's correlation (default),
@@ -68,7 +68,7 @@ ndrlm(Y,X,latents="in",dircon=FALSE,optimize=TRUE,
 }
 \value{
 \item{fval}{Objective function for fitting}
-\item{target}{Target performance measures. The possible target measure are "adj.r.square" = adjusted R  square (default), "r.sqauare" = R square, "MAE" = mean absolute error, "MAPE" = mean absolute percentage error, "MASE" = mean absolute scaled error ,"MSE"= mean square error,"RMSE" = root mean square error}
+\item{target}{Target performance measures. The possible target measure are "adj.r.square" = adjusted R  square (default), "r.sqauare" = R square, "MAE" = mean absolute error, "MAPE" = mean absolute percentage error, "MASE" = mean absolute scaled error ,"MSE"= mean square error,"RMSE" = root mean square error, "AIC" = Akaike Information Criterion, "BIC" = Bayesian Information Criterion}
 \item{hyperparams}{optimized hyperparameters}
 \item{pareto}{in the case of multiple objectives TRUE provides pareto-optimal solution, while FALSE (default) provides weighted mean of objective functions (see out_weights)}
 \item{Y}{A numeric data frame of output variables}
@@ -92,7 +92,7 @@ minimal common communalities (used in \code{\link{ndr}})}
 \item{NDAout_min_R}{Optimized
 minimal square correlation between indicators (used in \code{\link{ndr}})}
 \item{fits}{List of linear regrassion models}
-\item{otimized}{Wheter fittings are optimized or not}
+\item{optimized}{Wheter fittings are optimized or not}
 \item{NSGA}{Outpot structure of NSGA-II optimization (list), if the optimization value is true (see in \code{\link[mco:nsga2]{mco::nsga2}})}
 \item{extra_vars.X}{Logic variable. If direct connection (dircon=TRUE) is allowed not only the latent but the excluded input variables are analyized in the linear models as extra input variables.}
 \item{extra_vars.Y}{Logic variable. If direct connection (dircon=TRUE) is allowed not only the latent but the excluded output variables are analyized in the linear models as extra input variables.}

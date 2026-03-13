@@ -1,10 +1,14 @@
 Version 0.2.4
 
+   o employing AIC, BIC as target function in nbrlm
+
+Version 0.2.4
+
    o employing several target performance measure
 
 Version 0.2.3
 
-   o calculateing predictions
+   o calculating predictions
 
 Version 0.2.2
 
