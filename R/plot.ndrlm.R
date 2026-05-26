@@ -107,14 +107,16 @@ plot.ndrlm <- function(x,sig=0.05,interactive=FALSE,...){
       indepvars<-colnames(x$fits[[i]]$model)[-1]
       depvar<-colnames(x$fits[[i]]$model)[1]
       for (j in 1:length(coefs)){
-        if (pvalues[j]<sig){
-          edges[k,"to"]<-node_ID[node_label %in% depvar]
-          edges[k,"from"]<-node_ID[node_label %in% indepvars[j]]
-          edges[k,"weight"]<-coefs[j]
-          edges[k,"color"]<-"black"
-          edges[k,"lty"]<-"solid"
-          edges[k,"dashes"]<-FALSE
-          k<-k+1
+        if (!is.na(pvalues[j])){
+          if (pvalues[j]<sig){
+            edges[k,"to"]<-node_ID[node_label %in% depvar]
+            edges[k,"from"]<-node_ID[node_label %in% indepvars[j]]
+            edges[k,"weight"]<-coefs[j]
+            edges[k,"color"]<-"black"
+            edges[k,"lty"]<-"solid"
+            edges[k,"dashes"]<-FALSE
+            k<-k+1
+          }
         }
       }
     }
