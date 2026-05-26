@@ -103,6 +103,7 @@ plot.ndrlm <- function(x,sig=0.05,interactive=FALSE,...){
     for (i in 1:length(x$fits)){
       coefs<-as.vector(lm.beta::lm.beta(x$fits[[i]])$standardized.coefficients)[-1]
       pvalues<-summary(x$fits[[i]])$coefficients[-1,4]
+      pvalues[is.na(pvalues)]<-1
       indepvars<-colnames(x$fits[[i]]$model)[-1]
       depvar<-colnames(x$fits[[i]]$model)[1]
       for (j in 1:length(coefs)){
