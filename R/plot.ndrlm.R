@@ -1,239 +1,123 @@
-#-----------------------------------------------------------------------------#
-#                                                                             #
-#  GENERALIZED NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (GNDA)     #
-#                                                                             #
-#  Written by: Zsolt T. Kosztyan*, Marcell T. Kurbucz, Attila I. Katona,      #
-#              Zahid Khan                                                     #
-#              *Department of Quantitative Methods                            #
-#              University of Pannonia, Hungary                                #
-#              kosztyan.zsolt@gtk.uni-pannon.hu                               #
-#                                                                             #
-# Last modified: February 2024                                                #
-#-----------------------------------------------------------------------------#
-### PLOT FOR NETWORK-BASED DIMENSIONALITY REDUCTION AND REGRESSION (NDRLM) ####
+#' Plot an NDRLM path network
 #' @export
-plot.ndrlm <- function(x,sig=0.05,interactive=FALSE,...){
-  if (methods::is(x,"ndrlm")){
-    latents<-x$latents
-    extra_vars.X<-x$extra_vars.X
-    extra_vars.Y<-x$extra_vars.Y
-
-    X<-x$X
-    Y<-x$Y
-
-    nY<-ncol(x$Y)
-    nSin<-0
-    if (latents %in% c("in","both")){
-      nSin<-ncol(x$NDAin$scores)
-      membership.X<-x$NDAin$membership
-      loadings.X<-x$NDAin$loadings
-    }
-    nSout<-0
-    if (latents %in% c("out","both")){
-      nSout<-ncol(x$NDAout$scores)
-      membership.Y<-x$NDAout$membership
-      loadings.Y<-x$NDAout$loadings
-    }
-    nX<-ncol(x$X)
-
-    node_ID<-1:(nY+nSout+nSin+nX)
-    node_label<-c(colnames(x$Y),
-                  unlist(ifelse(latents %in% c("out","both"),
-                                list(paste("NDAout",1:x$NDAout$factors,sep="")),
-                                list(NULL))),
-                  unlist(ifelse(latents %in% c("in","both"),
-                                list(paste("NDAin",1:x$NDAin$factors,sep="")),
-                                list(NULL))),colnames(x$X))
-
-    node_shape<-c(rep("rectangle",nY),
-                  unlist(ifelse(latents %in% c("out","both"),
-                                list(rep("circle",nSout)),
-                                list(NULL))),
-                  unlist(ifelse(latents %in% c("in","both"),
-                                list(rep("circle",nSin)),
-                                list(NULL))),
-                  rep("rectangle",nX))
-
-    node_color<-c(unlist(ifelse(latents %in% c("out","both"),
-                                list(x$NDAout$membership),
-                                list(rep(0,nY)))),
-                  unlist(ifelse(latents %in% c("out","both"),
-                                list(1:nSout),
-                                list(NULL))),
-                  unlist(ifelse(latents %in% c("in","both"),
-                                list(1:nSin),
-                                list(NULL))),
-                  unlist(ifelse(latents %in% c("in","both"),
-                                list(x$NDAin$membership),
-                                list(rep(0,nX)))))
-    nodes<-data.frame(id=node_ID,label=node_label,shape=node_shape,
-                      color=node_color)
-    edges <- data.frame(matrix(ncol = 6, nrow = 0))
-    colnames(edges) <- c('from', 'to', 'weight' , 'color' , 'lty' , 'dashes')
-
-    dep<-Y
-    if (latents %in% c("out","both")){
-      if (extra_vars.Y==TRUE){
-        dep<-cbind(x$NDAout$scores,x$Y[,x$NDAout$membership==0])
-        dep<-as.data.frame(dep)
-        colnames(dep)<-c(paste("NDAout",1:x$NDAout$factors,sep=""),
-                         colnames(x$Y)[x$NDAout$membership==0])
-      }else{
-        dep<-x$NDAout$scores
-        colnames(dep)<-paste("NDAout",1:x$NDAout$factors,sep="")
-      }
-    }
-    indep<-X
-    if (latents %in% c("in","both")){
-      if (extra_vars.X==TRUE){
-        indep<-cbind(x$NDAin$scores,x$X[,x$NDAin$membership==0])
-        indep<-as.data.frame(indep)
-        colnames(indep)<-c(paste("NDAin",1:x$NDAin$factors,sep=""),
-                           colnames(x$X)[x$NDAin$membership==0])
-
-
-
-      }else{
-        indep<-x$NDAin$scores
-        colnames(indep)<-paste("NDAin",1:x$NDAin$factors,sep="")
-      }
-    }
-
-    k<-1
-    for (i in 1:length(x$fits)){
-      coefs<-as.vector(lm.beta::lm.beta(x$fits[[i]])$standardized.coefficients)[-1]
-      pvalues<-summary(x$fits[[i]])$coefficients[-1,4]
-      pvalues[is.na(pvalues)]<-1
-      indepvars<-colnames(x$fits[[i]]$model)[-1]
-      depvar<-colnames(x$fits[[i]]$model)[1]
-      for (j in 1:length(coefs)){
-        if (!is.na(pvalues[j])){
-          if (pvalues[j]<sig){
-            edges[k,"to"]<-node_ID[node_label %in% depvar]
-            edges[k,"from"]<-node_ID[node_label %in% indepvars[j]]
-            edges[k,"weight"]<-coefs[j]
-            edges[k,"color"]<-"black"
-            edges[k,"lty"]<-"solid"
-            edges[k,"dashes"]<-FALSE
-            k<-k+1
-          }
-        }
-      }
-    }
-
-    if (latents %in% c("in","both")){
-      membership.X<-x$NDAin$membership
-      for (i in 1:nSin){
-        for (j in 1:length(membership.X)){
-          if (membership.X[j]==i){
-            edges[k,"from"]<-node_ID[node_label %in% colnames(x$X)[j]]
-            edges[k,"to"]<-node_ID[node_label %in% paste("NDAin",i,sep="")]
-            edges[k,"weight"]<-loadings.X[colnames(x$X)[j],i]
-            edges[k,"color"]<-"grey"
-            edges[k,"lty"]<-"dashed"
-            edges[k,"dashes"]<-TRUE
-            k<-k+1
-          }
-        }
-      }
-    }
-
-    if (latents %in% c("out","both")){
-      membership.Y<-x$NDAout$membership
-      for (i in 1:nSout){
-        for (j in 1:length(membership.Y)){
-          if (membership.Y[j]==i){
-            edges[k,"from"]<-node_ID[node_label %in% colnames(x$Y)[j]]
-            edges[k,"to"]<-node_ID[node_label %in% paste("NDAout",i,sep="")]
-            edges[k,"weight"]<-loadings.Y[colnames(x$Y)[j],i]
-            edges[k,"color"]<-"grey"
-            edges[k,"lty"]<-"dashed"
-            edges[k,"dashes"]<-TRUE
-            k<-k+1
-          }
-        }
-      }
-    }
-
-
-    space<-100
-    cust_layout<-matrix(0,ncol=2,nrow=nY+nSin+nSout+nX)
-    cust_layout[1:nY,1]<-30
-    if (latents %in% c("out","both")){
-      cust_layout[sort(membership.Y,index.return=TRUE)$ix,2]<-((1:nY)-mean(1:nY))*space
-    }else{
-      cust_layout[1:nY,2]<-((1:nY)-mean(1:nY))*space
-    }
-
-    if (latents %in% c("out","both")){
-      cust_layout[(nY+1):(nY+nSout),1]<-20
-      cust_layout[(nY+1):(nY+nSout),2]<-((1:nSout)-mean(1:nSout))*space
-    }
-
-    if (latents %in% c("in","both")){
-      cust_layout[(nY+nSout+1):(nY+nSin+nSout),1]<-10
-      cust_layout[(nY+nSout+1):(nY+nSin+nSout),2]<-((1:nSin)-mean(1:nSin))*space
-    }
-
-    cust_layout[(nY+nSin+nSout+1):(nY+nSin+nSout+nX),1]<-0
-    if (latents %in% c("in","both")){
-      cust_layout[sort(membership.X,index.return=TRUE)$ix+nY+nSin+nSout,2]<-((1:nX)-mean(1:nX))*space
-    }else{
-      cust_layout[(nY+nSin+nSout+1):(nY+nSin+nSout+nX),2]<-((1:nX)-mean(1:nX))*space
-    }
-    if (latents %in% c("in","both")){
-      for (i in 1:nSin){
-        cust_layout[(nY+nSout+i),2]<-mean(cust_layout[cust_layout[,1]==0,2]*(membership.X==i))
-      }
-    }
-    if (latents %in% c("out","both")){
-      for (i in 1:nSout){
-        cust_layout[(nY+i),2]<-mean(cust_layout[cust_layout[,1]==30,2]*(membership.Y==i))
-      }
-    }
-
-    G<-igraph::graph_from_data_frame(edges,
-                                     directed=TRUE,
-                                     vertices=nodes)
-
-    if (interactive==TRUE){
-      edges$arrows<-ifelse(igraph::is.directed(G),c("to"),"")
-      edges$width<-(abs(igraph::E(G)$weight))
-      nodes$color<-grDevices::hsv((node_color+1)/max(node_color+1),
-                                  alpha=0.4)
-      nodes$shape<-gsub("rectangle","box",nodes$shape)
-      nodes$shape<-gsub("circle","ellipse",nodes$shape)
-      edges$label<-as.vector(paste(round(edges$weight,2),sep=""))
-      nw <-
-        visNetwork::visIgraphLayout(
-          visNetwork::visNodes(
-            visNetwork::visInteraction(
-              visNetwork::visOptions(
-                visNetwork::visEdges(
-                  visNetwork::visNetwork(
-                    nodes, edges, height = "1000px", width = "100%"),
-                  font = list(size = 6),color="#555555",
-                  label=edges$label),
-                highlightNearest = TRUE, selectedBy = "label"),
-              dragNodes = TRUE,
-              dragView = TRUE,
-              zoomView = TRUE,
-              hideEdgesOnDrag = FALSE),physics=FALSE, size=16,
-            borderWidth = 1,
-            shape=nodes$shape,
-            font=list(face="calibri")),layout="layout.norm",
-          layoutMatrix = cust_layout,
-          physics = FALSE, type="full"
-        )
-      nw
-      return(nw)
-
-    }else{
-      igraph::V(G)$color<-grDevices::hsv((node_color+1)/max(node_color+1),
-                                         alpha=0.4)
-      igraph::plot.igraph(G,layout=cust_layout,edge.width=abs(igraph::E(G)$weight)*2,
-                          edge.label=round(igraph::E(G)$weight,2),vertex.size=30)
-      return(invisible(G))
+plot.ndrlm <- function(x, sig = 0.05, interactive = FALSE,
+                       show_edge_labels = TRUE, edge.label.size = 9,
+                       vertex.label.size = 11, edgescale = 2,
+                       igraph_args = list(), visnetwork_args = list(), ...) {
+  if (!inherits(x, "ndrlm")) stop("x must inherit from 'ndrlm'.", call. = FALSE)
+  node_rows <- list()
+  add_nodes <- function(id, label, role, column) {
+    data.frame(id = id, label = label, role = role, column = column,
+               stringsAsFactors = FALSE)
+  }
+  node_rows[[length(node_rows) + 1L]] <- add_nodes(
+    paste0("X:", colnames(x$X)), colnames(x$X), "indicator_in", 0)
+  if (x$latents %in% c("in", "both")) {
+    names_in <- paste0("NDAin", seq_len(x$NDAin$factors))
+    node_rows[[length(node_rows) + 1L]] <- add_nodes(
+      paste0("Lin:", names_in), names_in, "latent_in", 1)
+  }
+  if (x$latents %in% c("out", "both")) {
+    names_out <- paste0("NDAout", seq_len(x$NDAout$factors))
+    node_rows[[length(node_rows) + 1L]] <- add_nodes(
+      paste0("Lout:", names_out), names_out, "latent_out", 2)
+  }
+  node_rows[[length(node_rows) + 1L]] <- add_nodes(
+    paste0("Y:", colnames(x$Y)), colnames(x$Y), "indicator_out", 3)
+  nodes <- do.call(rbind, node_rows)
+  role_colors <- c(indicator_in = "#9ecae1", latent_in = "#3182bd",
+                   latent_out = "#e6550d", indicator_out = "#fdae6b")
+  nodes$color <- unname(role_colors[nodes$role])
+  nodes$shape <- ifelse(grepl("latent", nodes$role), "ellipse", "box")
+  nodes$y <- 0
+  for (column in unique(nodes$column)) {
+    index <- which(nodes$column == column)
+    nodes$y[index] <- seq(1, -1, length.out = length(index))
+  }
+  edges <- data.frame(from = character(), to = character(), weight = numeric(),
+                      color = character(), dashes = logical(),
+                      stringsAsFactors = FALSE)
+  add_edge <- function(from, to, weight, color, dashes) {
+    data.frame(from = from, to = to, weight = as.numeric(weight),
+               color = color, dashes = dashes, stringsAsFactors = FALSE)
+  }
+  if (x$latents %in% c("in", "both")) {
+    for (j in which(x$NDAin$membership > 0L)) {
+      g <- x$NDAin$membership[j]
+      edges <- rbind(edges, add_edge(paste0("X:", colnames(x$X)[j]),
+        paste0("Lin:NDAin", g), x$NDAin$loadings[j, g], "grey55", TRUE))
     }
   }
+  if (x$latents %in% c("out", "both")) {
+    for (j in which(x$NDAout$membership > 0L)) {
+      g <- x$NDAout$membership[j]
+      edges <- rbind(edges, add_edge(paste0("Y:", colnames(x$Y)[j]),
+        paste0("Lout:NDAout", g), x$NDAout$loadings[j, g], "grey55", TRUE))
+    }
+  }
+  independent_id <- function(name) {
+    if (startsWith(name, "NDAin")) paste0("Lin:", name) else paste0("X:", name)
+  }
+  dependent_id <- function(name) {
+    if (startsWith(name, "NDAout")) paste0("Lout:", name) else paste0("Y:", name)
+  }
+  for (i in seq_along(x$fits)) {
+    fit <- x$fits[[i]]
+    coef <- fit$coefficients
+    p_value <- fit$p_values
+    for (j in seq_along(coef)) {
+      if (!is.finite(coef[j]) || coef[j] == 0) next
+      if (is.finite(p_value[j]) && p_value[j] >= sig) next
+      edges <- rbind(edges, add_edge(independent_id(names(coef)[j]),
+        dependent_id(names(x$fits)[i]), coef[j],
+        if (coef[j] < 0) "darkred" else "darkblue", FALSE))
+    }
+  }
+  graph <- igraph::graph_from_data_frame(edges, directed = TRUE, vertices = nodes)
+  igraph::V(graph)$color <- nodes$color
+  igraph::V(graph)$shape <- ifelse(nodes$shape == "box", "rectangle", "circle")
+  igraph::V(graph)$label <- nodes$label
+  igraph::V(graph)$label.cex <- vertex.label.size / 12
+  igraph::E(graph)$color <- edges$color
+  igraph::E(graph)$lty <- ifelse(edges$dashes, 2, 1)
+  igraph::E(graph)$width <- 1 + edgescale * abs(edges$weight)
+  igraph::E(graph)$label <- if (show_edge_labels) round(edges$weight, 3) else ""
+  igraph::E(graph)$label.cex <- edge.label.size / 12
+  layout_matrix <- as.matrix(nodes[, c("column", "y")])
+
+  if (interactive) {
+    vis_nodes <- data.frame(id = nodes$id, label = nodes$label,
+      color = nodes$color, shape = nodes$shape, x = nodes$column * 260,
+      y = nodes$y * 500, fixed = FALSE, font.size = vertex.label.size,
+      stringsAsFactors = FALSE)
+    vis_edges <- edges
+    vis_edges$width <- 1 + edgescale * abs(vis_edges$weight)
+    vis_edges$arrows <- "to"
+    vis_edges$label <- if (show_edge_labels) {
+      format(round(vis_edges$weight, 3), trim = TRUE)
+    } else ""
+    vis_edges$font.size <- edge.label.size
+    widget <- do.call(visNetwork::visNetwork,
+      c(list(nodes = vis_nodes, edges = vis_edges, height = "850px", width = "100%"),
+        visnetwork_args$network %||% list()))
+    widget <- do.call(visNetwork::visOptions,
+      c(list(graph = widget, highlightNearest = TRUE, selectedBy = "label"),
+        visnetwork_args$options %||% list()))
+    widget <- do.call(visNetwork::visPhysics,
+      c(list(graph = widget, enabled = FALSE), visnetwork_args$physics %||% list()))
+  } else widget <- NULL
+  out <- list(graph = graph, layout = layout_matrix, interactive = interactive,
+              widget = widget, igraph_args = c(igraph_args, list(...)))
+  class(out) <- c("ndrlm_plot", "list")
+  out
+}
+
+#' @export
+print.ndrlm_plot <- function(x, ...) {
+  if (x$interactive) print(x$widget) else {
+    do.call(igraph::plot.igraph,
+      c(list(x = x$graph, layout = x$layout, edge.arrow.size = 0.35,
+             vertex.size = 26), x$igraph_args, list(...)))
+  }
+  invisible(x)
 }

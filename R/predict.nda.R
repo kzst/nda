@@ -1,67 +1,28 @@
-#-----------------------------------------------------------------------------#
-#                                                                             #
-#  GENERALIZED NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (GNDA)     #
-#                                                                             #
-#  Written by: Zsolt T. Kosztyan*, Marcell T. Kurbucz, Attila I. Katona,      #
-#              Zahid Khan                                                     #
-#              *Department of Quantitative Methods                            #
-#              University of Pannonia, Hungary                                #
-#              kosztyan.zsolt@gtk.uni-pannon.hu                               #
-#                                                                             #
-# Last modified: February 2024                                                #
-#-----------------------------------------------------------------------------#
-### PREDICT SCORES NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (NDA) ##
+#' Predict NDA latent-variable scores
 #' @export
-predict.nda <- function(object,  newdata,...) {
-  if (methods::is(object,"nda")){
-    Call<-object$Call
-    LOADING<-object$loadings
-    SCORES<-object$scores
-    EVCs<-object$EVCs
-    center<-object$center
-    membership<-object$membership
-    weight<-object$weight
-    factors<-object$factors
-    use_rotation<-object$use_rotation
-    rotation<-object$rotation
-    seed<-object$seed
-    if (!is.null(seed)){
-      set.seed(seed)
-    }
-    if (length(membership)!=ncol(newdata)){
-      stop(
-        "The columns of newdata and the original date must be same.",
-        call. = FALSE
-      )
-    }
-
-    Coords<-1:length(membership)
-    L<-as.data.frame(matrix(0,nrow = nrow(newdata),ncol=factors))
-    colnames(L)<-colnames(SCORES)
-    rownames(L)<-rownames(newdata)
-    if (is.null(weight)){
-      weight=rep(1,ncol(r))
-    }
-    r<-t(t(newdata)*weight)
-    DATA<-r
-    X<-r
-
-    for (i in 1:factors){
-      EVC<-EVCs[[i]]
-      Coordsi<-Coords[membership==i]
-      result<-NA
-      try(result <- as.matrix(rowSums(r[,Coordsi] %*% EVC)),silent=TRUE)
-      if (is.null(nrow(is.nan(result)))){
-        try(result <- as.matrix(rowSums(r[,Coordsi] * EVC)),silent=TRUE)
-      }
-      L[,i]<-result
-    }
-    if (ncol(L)>1 && use_rotation==TRUE){
-      L<-psych::principal(L,nfactors = dim(L)[2],
-                          rotate = rotation)$scores
-    }else{
-      L<-scale(L,center = center)
-    }
-    return(L)
+predict.nda <- function(object, newdata, ...) {
+  if (!inherits(object, "nda")) stop("object must inherit from 'nda'.", call. = FALSE)
+  if (missing(newdata) || is.null(newdata)) return(object$scores)
+  if (is.null(object$scores)) {
+    stop("Scores cannot be predicted from a model fitted with covar = TRUE.", call. = FALSE)
   }
+  x <- as.matrix(.nda_numeric_matrix(newdata, "newdata"))
+  required <- names(object$weight)
+  missing_names <- setdiff(required, colnames(x))
+  if (length(missing_names)) {
+    stop("newdata is missing: ", paste(missing_names, collapse = ", "), call. = FALSE)
+  }
+  x <- x[, required, drop = FALSE]
+  scaled <- .nda_scale(x, object$feature_center, object$feature_scale,
+                       object$standardized)
+  x <- sweep(scaled$x, 2L, object$weight, "*")
+  raw <- matrix(0, nrow(x), object$factors)
+  for (g in seq_len(object$factors)) {
+    index <- match(names(object$EVCs[[g]]), colnames(x))
+    raw[, g] <- as.numeric(x[, index, drop = FALSE] %*% object$EVCs[[g]])
+  }
+  scores <- sweep(sweep(raw, 2L, object$center, "-"), 2L, object$scale, "/")
+  scores <- scores %*% object$rotation_matrix
+  dimnames(scores) <- list(rownames(newdata), paste0("NDA", seq_len(object$factors)))
+  scores
 }

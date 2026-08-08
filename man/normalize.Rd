@@ -1,34 +1,20 @@
 \name{normalize}
 \alias{normalize}
-\title{Min-max normalization}
-\description{Min-max normalization for data matrices and data frames
-}
-
-\usage{
-normalize(x,type="all")
-}
-
+\title{Fast Min-Max Normalization}
+\description{Rescales a numeric matrix or data frame globally, by row, or by column.}
+\usage{normalize(x, type = c("all", "row", "col"), range = c(0, 1),
+          na.rm = TRUE)}
 \arguments{
-\item{x}{A data frame or data matrix.}
-\item{type}{The type of normalization. "row" normalization row by row, "col" normalization column by column, and "all" normalization for the entire data frame/matrix (default)}
+\item{x}{Numeric matrix or data frame.}
+\item{type}{Normalize all values together, each row, or each column.}
+\item{range}{Two increasing finite output limits.}
+\item{na.rm}{Remove missing values when finding limits.}
 }
-
+\details{A constant slice is mapped to the midpoint of \code{range}.}
+\value{A normalized object with the same matrix or data-frame form as \code{x}.}
 \examples{
-  mtx<-matrix(rnorm(20),5,4)
-  n_mtx<-normalize(mtx) # Fully normalized matrix
-  r_mtx<-normalize(mtx,type="row") # Normalize row by row
-  c_mtx<-normalize(mtx,type="col") # Normalize col by col
-  print(n_mtx) # Print fully normalized matrix
+m <- matrix(rnorm(20), 5, 4)
+normalize(m)
+normalize(m, type = "row", range = c(-1, 1))
 }
-
-\value{
-Returns a normalized data.frame/matrix.
-}
-
-\author{
-Zsolt T. Kosztyan, University of Pannonia
-
-e-mail: kosztyan.zsolt@gtk.uni-pannon.hu
-}
-
 \keyword{matrix}

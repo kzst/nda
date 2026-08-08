@@ -1,7 +1,7 @@
 Package: nda
 Type: Package
 Title: Generalized Network-Based Dimensionality Reduction and Analysis
-Version: 0.2.6
+Version: 0.3.0
 Authors@R: c(
     person("Zsolt T.", "Kosztyan", email="kosztyan.zsolt@gtk.uni-pannon.hu", role = c("aut", "cre")),
     person("Marcell T.", "Kurbucz", email="kurbuczmarcell@gmail.com", role = c("aut")),
@@ -9,26 +9,35 @@ Authors@R: c(
     person("Zahid", "Khan", email="zahidkhan@hu.edu.pk", role = c("aut"))
     )
 Maintainer: Zsolt T. Kosztyan <kosztyan.zsolt@gtk.uni-pannon.hu>
-Description: Non-parametric dimensionality reduction function. Reduction with and without feature selection. Plot functions. Automated feature selections. Kosztyan et. al. (2024) <doi:10.1016/j.eswa.2023.121779>.
+Description: Constructs interpretable latent variables from communities in
+    squared-association networks. Supports full, partial, and semipartial
+    associations, feature selection, sparse networks, inference, prediction,
+    visualization, and supervised regression. The generalized method is
+    described in Kosztyan et al. (2024) <doi:10.1016/j.eswa.2023.121779>.
 License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
+LazyDataCompression: xz
 URL: https://github.com/kzst/nda
+BugReports: https://github.com/kzst/nda/issues
 Depends: 
-    R (>= 4.00)
+    R (>= 4.0.0)
 Imports: 
     energy,
     psych, 
     stats,
+    graphics,
+    grDevices,
     igraph,
     Matrix,
-    methods,
-    Rfast,
     MASS,
     mco,
+    parallel,
     ppcor,
-    lm.beta,
-    leidenAlg,
-    Metrics,
     visNetwork
+Suggests:
+    glmnet,
+    plotly,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
 RoxygenNote: 7.2.3

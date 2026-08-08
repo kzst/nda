@@ -1,40 +1,29 @@
 \name{plot.ndrlm}
 \alias{plot.ndrlm}
-\title{
-Plot function for Generalized Network-based Dimensionality Reduction and Regression (GNDR)
-}
-\description{
-Plot the structural equation model, based on the GNDR
-}
+\title{Plot an NDRLM Path Network}
+\description{Creates a layered, printable network of indicators, latent variables, and fitted regression links.}
 \usage{
-\method{plot}{ndrlm}(x, sig=0.05, interactive=FALSE,...)
+\method{plot}{ndrlm}(x, sig = 0.05, interactive = FALSE,
+    show_edge_labels = TRUE, edge.label.size = 9,
+    vertex.label.size = 11, edgescale = 2,
+    igraph_args = list(), visnetwork_args = list(), ...)
 }
 \arguments{
-  \item{x}{An object of class 'NDRLM'.}
-  \item{sig}{Significance level of relationships}
-  \item{interactive}{Plot interactive visNetwork graph or non-interactive igraph plot (default FALSE).}
-  \item{...}{other graphical parameters.}
+\item{x}{An \code{ndrlm} object.}
+\item{sig}{Significance threshold for ordinary least-squares paths. Penalized and LOESS paths do not have p-values and are not filtered by \code{sig}.}
+\item{interactive}{Create a \pkg{visNetwork} widget.}
+\item{show_edge_labels}{Show loading and path estimates.}
+\item{edge.label.size,vertex.label.size}{Label sizes.}
+\item{edgescale}{Absolute-weight edge-width multiplier.}
+\item{igraph_args}{Named static plotting arguments.}
+\item{visnetwork_args}{Named \code{network}, \code{options}, and \code{physics} argument lists.}
+\item{...}{Additional static \code{plot.igraph} arguments.}
 }
-\references{
-Kosztyán, Z. T., Katona, A. I., Kurbucz, M. T., & Lantos, Z. (2024). Generalized network-based dimensionality analysis. Expert Systems with Applications, 238, 121779. <URL:
-https://doi.org/10.1016/j.eswa.2023.121779>.
-
-}
-\author{
-Zsolt T. Kosztyan*, Marcell T. Kurbucz, Attila I. Katona
-
-e-mail*: kosztyan.zsolt@gtk.uni-pannon.hu
-}
-
-\seealso{\code{\link{summary}}, \code{\link{ndr}},\code{\link{ndrlm}}.}
-
+\value{An \code{ndrlm_plot} object; printing it renders the graph.}
 \examples{
-# Plot function for non-optimized SEM
-
-X<-freeny.x
-Y<-freeny.y
-NDRLM<-ndrlm(Y,X,optimize=FALSE)
-plot(NDRLM)
+X <- as.data.frame(freeny.x)
+Y <- data.frame(y = freeny.y)
+p <- plot(ndrlm(Y, X, optimize = FALSE))
+p
 }
 \keyword{multivariate}
-\concept{plots}

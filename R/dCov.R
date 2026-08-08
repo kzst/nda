@@ -1,43 +1,29 @@
-#-----------------------------------------------------------------------------#
-#                                                                             #
-#  GENERALIZED NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (GNDA)     #
-#                                                                             #
-#  Written by: Zsolt T. Kosztyan*, Marcell T. Kurbucz, Attila I. Katona,      #
-#              Zahid Khan                                                     #
-#              *Department of Quantitative Methods                            #
-#              University of Pannonia, Hungary                                #
-#              kosztyan.zsolt@gtk.uni-pannon.hu                               #
-#                                                                             #
-# Last modified: February 2024                                                #
-#-----------------------------------------------------------------------------#
-######## MATRIX-BASED DISTANCE COVARIANCE ########
+#' Matrix-based distance covariance
 #' @export
-dCov<-function(x,y=NULL){
-  if (!requireNamespace("energy", quietly = TRUE)) {
-    stop(
-      "Package \"energy\" must be installed to use this function.",
-      call. = FALSE
-    )
+dCov <- function(x, y = NULL, test = FALSE, adjust = "BH", alpha = NULL,
+                 parallel = FALSE, cores = 1L, R = 499L) {
+  statistic <- function(a, b) {
+    if (length(a) > 50L && exists("dcov2d", envir = asNamespace("energy"),
+                                  inherits = FALSE)) {
+      sqrt(pmax(energy::dcov2d(a, b, type = "V"), 0))
+    } else energy::dcov(a, b)
   }
-  if (is.null(y)){
-    if (is.data.frame(x)|is.matrix(x)){
-      dC<-matrix(0,nrow=ncol(x),ncol=ncol(x))
-      for (i in c(1:ncol(x))){
-        for (j in c(1:ncol(x))){
-          dC[i,j]<-energy::dcov(x[,i],x[,j])
-        }
-      }
-      rownames(dC)<-colnames(x)
-      colnames(dC)<-colnames(x)
-      dCov<-dC
-      dCov
-    }else{
-      stop("Error: x must be a matrix or a dataframe!")
-      dCov<-NULL
-    }
-  }else{
-    dCov<-energy::dcov(x,y)
-    dCov
+  test_fun <- function(a, b) energy::dcov.test(a, b, R = R)$p.value
+  if (!is.null(y)) {
+    keep <- stats::complete.cases(x, y)
+    estimate <- statistic(x[keep], y[keep])
+    if (!test) return(estimate)
+    return(list(r = estimate, p = test_fun(x[keep], y[keep])))
   }
+  out <- .nda_pairwise_matrix(x, statistic, test_fun, test, adjust, alpha,
+                              parallel, cores)
+  m <- as.matrix(x)
+  diagonal <- vapply(seq_len(ncol(m)), function(i) statistic(m[, i], m[, i]),
+                     numeric(1))
+  if (test) {
+    diag(out$r) <- diagonal
+  } else {
+    diag(out) <- diagonal
+  }
+  out
 }
-

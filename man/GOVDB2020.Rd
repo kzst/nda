@@ -2,7 +2,7 @@
 \alias{GOVDB2020}
 \docType{data}
 \title{
-Governmental and economic data of countries (2020), where the data frame has 138 observations of 2161 variables.
+Governmental and economic data for 138 countries and 2,161 variables
 }
 \description{
 Sample datasets for Generalized Network-based Dimensionality Reduction and Analysis (GNDA)

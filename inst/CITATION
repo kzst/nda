@@ -1,7 +1,7 @@
 bibentry(
     header       = "To cite 'nda' in publications use:",
     bibtype      = "article",
-    title        = "nda: an R package for Generalized Network-based Dimensionality reduction and Analysis",
+    title        = "nda: An R Package for Generalized Network-Based Dimensionality Reduction and Analysis",
     author       = c(
     person("Zsolt T.", "Kosztyan", email="kosztyan.zsolt@gtk.uni-pannon.hu", role = c("aut", "cre")),
     person("Marcell T.", "Kurbucz", email="kurbuczmarcell@gmail.com", role = c("aut")),
@@ -14,6 +14,6 @@ bibentry(
     doi          = "10.1016/j.eswa.2023.121779",
     url          = "https://github.com/kzst/nda/",
     textVersion  =
-    paste("Kosztyan et. al. (2022).",
-          "nda: an R package for Generalized Network-based Dimensionality reduction and Analysis")
+    paste("Kosztyan, Kurbucz, and Katona (2024).",
+          "nda: An R Package for Generalized Network-Based Dimensionality Reduction and Analysis")
 )

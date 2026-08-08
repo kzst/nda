@@ -1,45 +1,18 @@
 \name{pdCor}
 \alias{pdCor}
-\title{Calculating partial distance correlation of columns of a matrix
-}
-
-\description{Calculating partial distance correlation of two columns of a matrix for Generalized Network-based Dimensionality Reduction and Analysis (GNDA).
-
-The calculation is very slow for large matrices!
-}
-
-\usage{
-pdCor(x)
-}
+\title{Partial Distance-Correlation Matrix}
+\description{Forms a partial distance-correlation matrix by inverting the distance-covariance matrix.}
+\usage{pdCor(x, test = FALSE, adjust = "BH", alpha = NULL,
+      parallel = FALSE, cores = 1L)}
 \arguments{
-  \item{x}{a a numeric matrix, or a numeric data frame}
+\item{x}{Numeric matrix or data frame.}
+\item{test}{Return approximate coefficient p-values.}
+\item{adjust}{Method passed to \code{p.adjust}.}
+\item{alpha}{Optional adjusted-p filtering threshold.}
+\item{parallel}{Calculate distance-covariance pairs in parallel where supported.}
+\item{cores}{Requested core count.}
 }
-
-\value{
-
-Partial distance correlation matrix of \code{x}.
-}
-\references{
-Rizzo M, Szekely G (2021). _energy: E-Statistics:
-Multivariate Inference via the Energy of Data_. R
-package version 1.7-8, <URL:
-https://CRAN.R-project.org/package=energy>.
-
-}
-\author{
-Prof. Zsolt T. Kosztyan, Department of Quantitative Methods, Institute of Management, Faculty of Business and Economics, University of Pannonia, Hungary
-
-e-mail: kosztyan.zsolt@gtk.uni-pannon.hu
-}
-
-\examples{
-# Specification of partial distance correlaction matrix.
-x<-matrix(rnorm(36),nrow=6)
-pdCor(x)
-}
-
-\keyword{array}
+\details{When the distance-covariance matrix is singular, a Moore-Penrose generalized inverse is used. The optional p-values use a t approximation and should be interpreted as screening diagnostics.}
+\value{A matrix, or a list with matrices \code{r} and \code{p} when \code{test = TRUE}.}
+\examples{x <- matrix(rnorm(100), 20, 5); pdCor(x)}
 \keyword{multivariate}
-\concept{correlation matrix}
-\concept{distance correlation}
-

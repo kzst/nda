@@ -2,7 +2,7 @@
 \alias{CWTS_2020}
 \docType{data}
 \title{
-CWTS Leiden's University Ranking 2020 for all scientific fields, within the period of 2016-2019. 1176 observations (i.e., universities), and 42 variables (i.e., indicators).
+CWTS Leiden University Ranking 2020 with 1,176 universities and 42 indicators
 }
 \description{
 Sample datasets for Generalized Network-based Dimensionality Reduction and Analysis (GNDA)

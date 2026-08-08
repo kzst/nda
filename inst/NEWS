@@ -1,10 +1,24 @@
+Version 0.3.0
+
+   o fixed null-model and Gamma handling in ndr
+   o added textual association types and methods, Gaussian-rank and biweight correlations
+   o added FDR-adjusted tests, multicore pair calculations, sparse networks, fixed memberships, manual expected matrices, and bootstrap loading intervals
+   o added authority, hub, and PageRank latent weighting
+   o made training standardization and prediction transformations consistent
+   o added modularity, inference statistics, association-matrix loadings, and reconstruction output
+   o added printable plot objects, configurable network graphics, and 3D biplot projections
+   o added ridge, elastic-net, and LOESS NDRLM engines and repeatable optimization restarts
+   o corrected ndrlm residual extraction and rewrote fitted and prediction methods
+   o removed the duplicate monolithic R/nda.R implementation
+   o added regression tests and updated American-English documentation
+
+Version 0.2.5
+
+   o added AIC and BIC target functions to ndrlm
+
 Version 0.2.4
 
-   o employing AIC, BIC as target function in nbrlm
-
-Version 0.2.4
-
-   o employing several target performance measure
+   o added several target performance measures
 
 Version 0.2.3
 

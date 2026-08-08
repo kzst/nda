@@ -1,57 +1,21 @@
 \name{data_gen}
 \alias{data_gen}
-
-\title{Generate random block matrix for GNDA
-}
-
-\description{Generate random block matrix for Generalized Network-based Dimensionality Reduction and Analysis (GNDA)
-}
-
-\usage{
-data_gen(n,m,nfactors=2,lambda=1)
-}
-
+\title{Generate Structured NDA Example Data}
+\description{Generates a noisy block matrix without constructing intermediate block-diagonal matrices.}
+\usage{data_gen(n, m, nfactors = 2, lambda = 1, sparse = FALSE,
+         density = 1, seed = NULL)}
 \arguments{
-  \item{n}{number of rows}
-  \item{m}{number of columns}
-  \item{nfactors}{number of blocks (factors, where the default value is 2)}
-  \item{lambda}{exponential smoothing, where the default value is 1}
+\item{n}{Positive number of rows.}
+\item{m}{Positive number of columns.}
+\item{nfactors}{Positive number of blocks.}
+\item{lambda}{Finite exponential smoothing parameter.}
+\item{sparse}{Return a sparse \pkg{Matrix} object.}
+\item{density}{Proportion in (0, 1] of block entries retained as nonzero.}
+\item{seed}{Optional random seed.}
 }
-\details{
-\code{n}, \code{m}, \code{nfactors} must beintegers, and they are not less than 1; lambda should be a positive real number.
-}
-\value{
-
-  \item{M}{a dataframe of a block matrix}
-}
-\author{
-Prof. Zsolt T. Kosztyan, Department of Quantitative Methods, Institute of Management, Faculty of Business and Economics, University of Pannonia, Hungary
-
-e-mail: kzst@gtk.uni-pannon.hu
-}
-
+\value{A data frame, or a sparse matrix when \code{sparse = TRUE}.}
 \examples{
-# Specification 30 by 10 random block matrices with 2 blocks/factors
-df<-data_gen(30,10)
-library(psych)
-scree(df)
-biplot(ndr(df))
-# Specification 40 by 20 random block matrices with 3 blocks/factors
-df<-data_gen(40,20,3)
-library(psych)
-scree(df)
-biplot(ndr(df))
-plot(ndr(df))
-
-# Specification 50 by 20 random block matrices with 4 blocks/factors
-# lambda=0.1
-df<-data_gen(50,15,4,0.1)
-scree(df)
-biplot(ndr(df))
-plot(ndr(df))
+dense <- data_gen(30, 10, nfactors = 2, seed = 1)
+sparse <- data_gen(100, 40, nfactors = 4, sparse = TRUE, density = 0.5)
 }
-
 \keyword{array}
-\keyword{multivariate}
-\concept{random block matrix}
-

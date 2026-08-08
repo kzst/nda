@@ -2,7 +2,7 @@
 \alias{COVID19_2020}
 \docType{data}
 \title{
-Covid'19 case datesets of countries (2020), where the data frame has 138 observations of 18 variables.
+COVID-19 case data for 138 countries and 18 variables
 }
 \description{
 Sample datasets for Generalized Network-based Dimensionality Reduction and Analysis (GNDA)

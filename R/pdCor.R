@@ -1,60 +1,15 @@
-#-----------------------------------------------------------------------------#
-#                                                                             #
-#  GENERALIZED NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (GNDA)     #
-#                                                                             #
-#  Written by: Zsolt T. Kosztyan*, Marcell T. Kurbucz, Attila I. Katona,      #
-#              Zahid Khan                                                     #
-#              *Department of Quantitative Methods                            #
-#              University of Pannonia, Hungary                                #
-#              kosztyan.zsolt@gtk.uni-pannon.hu                               #
-#                                                                             #
-# Last modified: February 2024                                                #
-#-----------------------------------------------------------------------------#
-######## MATRIX-BASED DISTANCE PARTIAL CORRELATION ########
+#' Matrix-based partial distance correlation
 #' @export
-pdCor<-function(x){
-  if (!requireNamespace("energy", quietly = TRUE)) {
-    stop(
-      "Package \"energy\" must be installed to use this function.",
-      call. = FALSE
-    )
-  }
-  if (!requireNamespace("MASS", quietly = TRUE)) {
-    stop(
-      "Package \"MASS\" must be installed to use this function.",
-      call. = FALSE
-    )
-  }
-  if (is.data.frame(x))
-    x <- as.matrix(x)
-  if (!is.matrix(x))
-    stop("supply a matrix-like 'x'")
-  if (!(is.numeric(x) || is.logical(x)))
-    stop("'x' must be numeric")
-  stopifnot(is.atomic(x))
-
-  # sample number
-  n <- dim(x)[1]
-
-  # given variables' number
-  gp <- dim(x)[2]-2
-
-  # covariance matrix
-  cvx <- dCov(x)
-
-  # inverse covariance matrix
-  if(det(cvx) < .Machine$double.eps){
-    warning("The inverse of variance-covariance matrix is calculated using Moore-Penrose generalized matrix invers due to its determinant of zero.")
-    icvx <- MASS::ginv(cvx)
-  }else
-    icvx <- Rfast::spdinv(cvx)
-
-  rownames(icvx)<-rownames(cvx)
-  colnames(icvx)<-colnames(cvx)
-  # partial correlation
-  pcor <- -stats::cov2cor(icvx)
-  diag(pcor) <- 1
-  pdCor<-pcor
-  pdCor
+pdCor <- function(x, test = FALSE, adjust = "BH", alpha = NULL,
+                  parallel = FALSE, cores = 1L) {
+  x <- as.matrix(.nda_numeric_matrix(x))
+  cvx <- dCov(x, parallel = parallel, cores = cores)
+  inv <- .nda_inverse(cvx)
+  den <- sqrt(pmax(abs(diag(inv)), .Machine$double.eps))
+  out <- -inv / outer(den, den)
+  diag(out) <- 1
+  dimnames(out) <- list(colnames(x), colnames(x))
+  if (!test) return(out)
+  .nda_pvalues(out, nrow(x), controls = ncol(x) - 2L,
+               adjust = adjust, alpha = alpha)
 }
-
