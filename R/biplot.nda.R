@@ -1,3 +1,17 @@
+#-----------------------------------------------------------------------------#
+#                                                                             #
+#  GENERALIZED NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (GNDA)     #
+#                                                                             #
+#  Written by: Zsolt T. Kosztyan*, Marcell T. Kurbucz, Attila I. Katona,      #
+#              Zahid Khan                                                     #
+#              *Department of Quantitative Methods                            #
+#              University of Pannonia, Hungary                                #
+#              kosztyan.zsolt@gtk.uni-pannon.hu                               #
+#                                                                             #
+# Last modified: August 2026                                                #
+#-----------------------------------------------------------------------------#
+
+
 #' Biplot NDA scores and loadings
 #' @export
 biplot.nda <- function(x, main = NULL, dims = c(1, 2), view_3D = FALSE,

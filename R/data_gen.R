@@ -1,3 +1,17 @@
+#-----------------------------------------------------------------------------#
+#                                                                             #
+#  GENERALIZED NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (GNDA)     #
+#                                                                             #
+#  Written by: Zsolt T. Kosztyan*, Marcell T. Kurbucz, Attila I. Katona,      #
+#              Zahid Khan                                                     #
+#              *Department of Quantitative Methods                            #
+#              University of Pannonia, Hungary                                #
+#              kosztyan.zsolt@gtk.uni-pannon.hu                               #
+#                                                                             #
+# Last modified: August 2026                                                #
+#-----------------------------------------------------------------------------#
+
+
 #' Generate structured data for NDA examples
 #' @export
 data_gen <- function(n, m, nfactors = 2, lambda = 1, sparse = FALSE,

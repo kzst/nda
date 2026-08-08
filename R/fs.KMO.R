@@ -1,3 +1,17 @@
+#-----------------------------------------------------------------------------#
+#                                                                             #
+#  GENERALIZED NETWORK-BASED DIMENSIONALITY REDUCTION AND ANALYSIS (GNDA)     #
+#                                                                             #
+#  Written by: Zsolt T. Kosztyan*, Marcell T. Kurbucz, Attila I. Katona,      #
+#              Zahid Khan                                                     #
+#              *Department of Quantitative Methods                            #
+#              University of Pannonia, Hungary                                #
+#              kosztyan.zsolt@gtk.uni-pannon.hu                               #
+#                                                                             #
+# Last modified: August 2026                                                #
+#-----------------------------------------------------------------------------#
+
+
 #' KMO-based feature selection
 #' @export
 fs.KMO <- function(data, min_MSA = 0.5, cor.mtx = FALSE,
