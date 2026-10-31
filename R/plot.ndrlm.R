@@ -19,25 +19,54 @@ plot.ndrlm <- function(x, sig = 0.05, interactive = FALSE,
                        vertex.label.size = 11, edgescale = 2,
                        igraph_args = list(), visnetwork_args = list(), ...) {
   if (!inherits(x, "ndrlm")) stop("x must inherit from 'ndrlm'.", call. = FALSE)
+  if (is.null(x$X) || is.null(x$Y) || is.null(x$fits)) {
+    stop("x must contain $X, $Y, and $fits.", call. = FALSE)
+  }
+  input_names <- colnames(x$X) %||% paste0("X", seq_len(ncol(x$X)))
+  output_names <- colnames(x$Y) %||% paste0("Y", seq_len(ncol(x$Y)))
+  latents <- x$latents %||% if (!is.null(x$NDAin) && !is.null(x$NDAout)) {
+    "both"
+  } else if (!is.null(x$NDAin)) {
+    "in"
+  } else if (!is.null(x$NDAout)) {
+    "out"
+  } else {
+    "none"
+  }
+  latents <- tolower(as.character(latents)[1L])
+  if (!latents %in% c("in", "out", "both", "none")) latents <- "none"
+  factor_count <- function(model) {
+    if (is.null(model)) return(0L)
+    value <- model$factors
+    if (is.null(value) && !is.null(model$scores)) value <- ncol(model$scores)
+    if (is.null(value) && length(model$membership)) {
+      value <- max(suppressWarnings(as.integer(model$membership)), 0L,
+                   na.rm = TRUE)
+    }
+    value <- suppressWarnings(as.integer(value)[1L])
+    if (!length(value) || is.na(value) || value < 0L) 0L else value
+  }
+  factors_in <- if (latents %in% c("in", "both")) factor_count(x$NDAin) else 0L
+  factors_out <- if (latents %in% c("out", "both")) factor_count(x$NDAout) else 0L
   node_rows <- list()
   add_nodes <- function(id, label, role, column) {
     data.frame(id = id, label = label, role = role, column = column,
                stringsAsFactors = FALSE)
   }
   node_rows[[length(node_rows) + 1L]] <- add_nodes(
-    paste0("X:", colnames(x$X)), colnames(x$X), "indicator_in", 0)
-  if (x$latents %in% c("in", "both")) {
-    names_in <- paste0("NDAin", seq_len(x$NDAin$factors))
+    paste0("X:", input_names), input_names, "indicator_in", 0)
+  if (factors_in > 0L) {
+    names_in <- paste0("NDAin", seq_len(factors_in))
     node_rows[[length(node_rows) + 1L]] <- add_nodes(
       paste0("Lin:", names_in), names_in, "latent_in", 1)
   }
-  if (x$latents %in% c("out", "both")) {
-    names_out <- paste0("NDAout", seq_len(x$NDAout$factors))
+  if (factors_out > 0L) {
+    names_out <- paste0("NDAout", seq_len(factors_out))
     node_rows[[length(node_rows) + 1L]] <- add_nodes(
       paste0("Lout:", names_out), names_out, "latent_out", 2)
   }
   node_rows[[length(node_rows) + 1L]] <- add_nodes(
-    paste0("Y:", colnames(x$Y)), colnames(x$Y), "indicator_out", 3)
+    paste0("Y:", output_names), output_names, "indicator_out", 3)
   nodes <- do.call(rbind, node_rows)
   role_colors <- c(indicator_in = "#9ecae1", latent_in = "#3182bd",
                    latent_out = "#e6550d", indicator_out = "#fdae6b")
@@ -55,35 +84,93 @@ plot.ndrlm <- function(x, sig = 0.05, interactive = FALSE,
     data.frame(from = from, to = to, weight = as.numeric(weight),
                color = color, dashes = dashes, stringsAsFactors = FALSE)
   }
-  if (x$latents %in% c("in", "both")) {
-    for (j in which(x$NDAin$membership > 0L)) {
-      g <- x$NDAin$membership[j]
-      edges <- rbind(edges, add_edge(paste0("X:", colnames(x$X)[j]),
-        paste0("Lin:NDAin", g), x$NDAin$loadings[j, g], "grey55", TRUE))
+  normalized_membership <- function(model, variable_names, factors) {
+    value <- model$membership %||% rep(0L, length(variable_names))
+    if (!is.null(names(value)) && all(variable_names %in% names(value))) {
+      value <- value[variable_names]
+    }
+    value <- suppressWarnings(as.integer(value))
+    if (length(value) != length(variable_names)) return(rep(0L, length(variable_names)))
+    value[is.na(value) | value < 1L | value > factors] <- 0L
+    value
+  }
+  normalized_loadings <- function(model, variable_names, factors) {
+    value <- as.matrix(model$loadings)
+    if (!length(value) || nrow(value) != length(variable_names) ||
+        ncol(value) < factors) {
+      return(matrix(NA_real_, nrow = length(variable_names), ncol = factors,
+                    dimnames = list(variable_names, NULL)))
+    }
+    if (!is.null(rownames(value)) && all(variable_names %in% rownames(value))) {
+      value <- value[variable_names, , drop = FALSE]
+    }
+    value
+  }
+  if (factors_in > 0L) {
+    membership_in <- normalized_membership(x$NDAin, input_names, factors_in)
+    loadings_in <- normalized_loadings(x$NDAin, input_names, factors_in)
+    for (j in which(membership_in > 0L)) {
+      g <- membership_in[j]
+      weight <- loadings_in[j, g]
+      if (!is.finite(weight)) next
+      edges <- rbind(edges, add_edge(paste0("X:", input_names[j]),
+        paste0("Lin:NDAin", g), weight, "grey55", TRUE))
     }
   }
-  if (x$latents %in% c("out", "both")) {
-    for (j in which(x$NDAout$membership > 0L)) {
-      g <- x$NDAout$membership[j]
-      edges <- rbind(edges, add_edge(paste0("Y:", colnames(x$Y)[j]),
-        paste0("Lout:NDAout", g), x$NDAout$loadings[j, g], "grey55", TRUE))
+  if (factors_out > 0L) {
+    membership_out <- normalized_membership(x$NDAout, output_names, factors_out)
+    loadings_out <- normalized_loadings(x$NDAout, output_names, factors_out)
+    for (j in which(membership_out > 0L)) {
+      g <- membership_out[j]
+      weight <- loadings_out[j, g]
+      if (!is.finite(weight)) next
+      edges <- rbind(edges, add_edge(paste0("Y:", output_names[j]),
+        paste0("Lout:NDAout", g), weight, "grey55", TRUE))
     }
   }
   independent_id <- function(name) {
-    if (startsWith(name, "NDAin")) paste0("Lin:", name) else paste0("X:", name)
+    if (length(name) && !is.na(name) && startsWith(name, "NDAin")) {
+      paste0("Lin:", name)
+    } else paste0("X:", name)
   }
   dependent_id <- function(name) {
-    if (startsWith(name, "NDAout")) paste0("Lout:", name) else paste0("Y:", name)
+    if (length(name) && !is.na(name) && startsWith(name, "NDAout")) {
+      paste0("Lout:", name)
+    } else paste0("Y:", name)
   }
   for (i in seq_along(x$fits)) {
     fit <- x$fits[[i]]
-    coef <- fit$coefficients
-    p_value <- fit$p_values
+    if (inherits(fit, c("lm", "glm"))) {
+      coef <- stats::coef(fit)
+      coef <- coef[names(coef) != "(Intercept)"]
+      coefficient_table <- tryCatch(summary(fit)$coefficients,
+                                    error = function(e) NULL)
+      p_value <- rep(NA_real_, length(coef))
+      names(p_value) <- names(coef)
+      if (!is.null(coefficient_table) && ncol(coefficient_table) >= 4L) {
+        matched <- intersect(names(coef), rownames(coefficient_table))
+        p_value[matched] <- coefficient_table[matched, 4L]
+      }
+      dependent_name <- names(x$fits)[i]
+      if (is.null(dependent_name) || is.na(dependent_name) ||
+          !nzchar(dependent_name)) {
+        dependent_name <- colnames(fit$model)[1L] %||% output_names[i]
+      }
+    } else {
+      coef <- fit$coefficients %||% numeric()
+      p_value <- fit$p_values %||% rep(NA_real_, length(coef))
+      if (length(p_value) != length(coef)) p_value <- rep(NA_real_, length(coef))
+      dependent_name <- names(x$fits)[i]
+      if (is.null(dependent_name) || is.na(dependent_name) ||
+          !nzchar(dependent_name)) dependent_name <- fit$response %||% output_names[i]
+    }
     for (j in seq_along(coef)) {
       if (!is.finite(coef[j]) || coef[j] == 0) next
       if (is.finite(p_value[j]) && p_value[j] >= sig) next
-      edges <- rbind(edges, add_edge(independent_id(names(coef)[j]),
-        dependent_id(names(x$fits)[i]), coef[j],
+      from <- independent_id(names(coef)[j])
+      to <- dependent_id(dependent_name)
+      if (!from %in% nodes$id || !to %in% nodes$id) next
+      edges <- rbind(edges, add_edge(from, to, coef[j],
         if (coef[j] < 0) "darkred" else "darkblue", FALSE))
     }
   }

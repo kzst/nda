@@ -23,8 +23,26 @@ plot.nda <- function(x, cuts = 0.3, interactive = TRUE, edgescale = 1,
                      layout = "nicely", igraph_args = list(),
                      visnetwork_args = list(), ...) {
   if (!inherits(x, "nda")) stop("x must inherit from 'nda'.", call. = FALSE)
-  similarity <- as.matrix(x$R)
-  values <- similarity[similarity > 0]
+  similarity <- x$R %||% x$correlation
+  if (is.null(similarity)) {
+    stop("x does not contain an association matrix in $R or $correlation.",
+         call. = FALSE)
+  }
+  similarity <- as.matrix(similarity)
+  if (!is.numeric(similarity) || nrow(similarity) != ncol(similarity)) {
+    stop("The association matrix must be numeric and square.", call. = FALSE)
+  }
+  if (is.null(colnames(similarity))) {
+    colnames(similarity) <- rownames(similarity) <-
+      paste0("V", seq_len(ncol(similarity)))
+  } else if (is.null(rownames(similarity))) {
+    rownames(similarity) <- colnames(similarity)
+  } else if (setequal(rownames(similarity), colnames(similarity))) {
+    similarity <- similarity[colnames(similarity), colnames(similarity), drop = FALSE]
+  }
+  raw_similarity <- similarity
+  similarity[!is.finite(similarity)] <- 0
+  values <- similarity[is.finite(similarity) & similarity > 0]
   threshold <- cuts
   if (isTRUE(x$covar) && length(values)) {
     threshold <- min(values) + cuts * (max(values) - min(values))
@@ -39,11 +57,37 @@ plot.nda <- function(x, cuts = 0.3, interactive = TRUE, edgescale = 1,
     mode = if (directed) "directed" else "undirected", weighted = TRUE,
     diag = FALSE)
   membership <- x$membership
-  palette <- grDevices::hcl.colors(max(1L, max(membership)), "Dark 3")
-  vertex_color <- ifelse(membership > 0, palette[pmax(1L, membership)], "grey80")
+  if (is.null(membership)) membership <- rep(0L, ncol(similarity))
+  if (!is.null(names(membership)) &&
+      all(colnames(similarity) %in% names(membership))) {
+    membership <- membership[colnames(similarity)]
+  }
+  membership <- suppressWarnings(as.integer(membership))
+  if (length(membership) != ncol(similarity)) {
+    stop("x$membership must contain one value per association-matrix variable.",
+         call. = FALSE)
+  }
+  membership[is.na(membership) | membership < 0L] <- 0L
+  groups <- if (length(membership)) max(membership, 0L) else 0L
+  palette <- grDevices::hcl.colors(max(1L, groups), "Dark 3")
+  vertex_color <- ifelse(membership > 0L,
+                         palette[pmax(1L, membership)], "grey80")
   shape <- rep(shapes, length.out = igraph::vcount(graph))
   edge_pairs <- igraph::as_edgelist(graph, names = FALSE)
-  association_values <- if (nrow(edge_pairs)) x$correlation[edge_pairs] else numeric()
+  association <- x$correlation
+  if (is.null(association)) association <- raw_similarity
+  association <- as.matrix(association)
+  if (!all(dim(association) == dim(raw_similarity))) association <- raw_similarity
+  if (!is.null(rownames(association)) && !is.null(colnames(association)) &&
+      setequal(rownames(association), colnames(raw_similarity)) &&
+      setequal(colnames(association), colnames(raw_similarity))) {
+    association <- association[colnames(raw_similarity), colnames(raw_similarity),
+                               drop = FALSE]
+  }
+  association_values <- if (nrow(edge_pairs)) association[edge_pairs] else numeric()
+  graph_weights <- if (nrow(edge_pairs)) igraph::E(graph)$weight else numeric()
+  association_values[!is.finite(association_values)] <-
+    graph_weights[!is.finite(association_values)]
   scale_colors <- function(z) {
     pal <- grDevices::colorRampPalette(edge.colors)(101)
     if (!length(z)) return(character())
@@ -66,7 +110,7 @@ plot.nda <- function(x, cuts = 0.3, interactive = TRUE, edgescale = 1,
   igraph::E(graph)$label <- edge_label
   igraph::E(graph)$label.color <- edge.label.color
   igraph::E(graph)$label.cex <- edge.label.size / 12
-  igraph::E(graph)$width <- 1 + edgescale * 4 * igraph::E(graph)$weight
+  igraph::E(graph)$width <- 1 + edgescale * 4 * abs(igraph::E(graph)$weight)
 
   if (interactive) {
     nodes <- data.frame(
@@ -78,7 +122,7 @@ plot.nda <- function(x, cuts = 0.3, interactive = TRUE, edgescale = 1,
       stringsAsFactors = FALSE)
     edges <- data.frame(
       from = edge_pairs[, 1L], to = edge_pairs[, 2L],
-      width = 1 + edgescale * 4 * igraph::E(graph)$weight,
+      width = 1 + edgescale * 4 * abs(igraph::E(graph)$weight),
       color = edge_color, label = edge_label,
       arrows = if (directed) "to" else "",
       font.size = edge.label.size, font.color = edge.label.color,

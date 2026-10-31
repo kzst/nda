@@ -1,5 +1,9 @@
-.Rproj.user
+.Rproj.user/
 .Rhistory
 .RData
 .Ruserdata
-.positai
+.DS_Store
+*.Rcheck/
+*.tar.gz
+.positai/
+.claude/
