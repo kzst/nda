@@ -81,9 +81,77 @@
        dropped_X = dropped_x, dropped_Y = dropped_y)
 }
 
+# Accessors keep both the CRAN-era lm fits and the 0.3.0 wrapped fits usable.
+.ndrlm_fit_metadata <- function(fit) {
+  metadata <- attr(fit, "ndrlm_metadata", exact = TRUE)
+  if (is.null(metadata)) list() else metadata
+}
+
+.ndrlm_fit_method <- function(fit) {
+  if (inherits(fit, "lm")) return("lm")
+  fit$method %||% NULL
+}
+
+.ndrlm_underlying_fit <- function(fit) {
+  if (inherits(fit, "lm")) fit else fit$fit
+}
+
+.ndrlm_fitted_values <- function(fit) {
+  metadata <- .ndrlm_fit_metadata(fit)
+  if (!is.null(metadata$fitted)) return(metadata$fitted)
+  if (!inherits(fit, "lm")) return(fit$fitted)
+  stats::napredict(fit$na.action, stats::fitted(fit))
+}
+
+.ndrlm_residual_values <- function(fit) {
+  metadata <- .ndrlm_fit_metadata(fit)
+  if (!is.null(metadata$residuals)) return(metadata$residuals)
+  if (!inherits(fit, "lm")) return(fit$residuals)
+  stats::naresid(fit$na.action, stats::residuals(fit))
+}
+
+.ndrlm_fit_coefficients <- function(fit) {
+  metadata <- .ndrlm_fit_metadata(fit)
+  if (!is.null(metadata$coefficients)) return(metadata$coefficients)
+  if (!inherits(fit, "lm")) return(fit$coefficients %||% numeric())
+  coefficients <- stats::coef(fit)
+  coefficients[names(coefficients) != "(Intercept)"]
+}
+
+.ndrlm_fit_p_values <- function(fit) {
+  metadata <- .ndrlm_fit_metadata(fit)
+  if (!is.null(metadata$p_values)) return(metadata$p_values)
+  if (!inherits(fit, "lm")) return(fit$p_values %||% numeric())
+  coefficient_table <- tryCatch(summary(fit)$coefficients,
+                                error = function(e) NULL)
+  coefficients <- .ndrlm_fit_coefficients(fit)
+  p_values <- stats::setNames(rep(NA_real_, length(coefficients)),
+                              names(coefficients))
+  if (!is.null(coefficient_table) && ncol(coefficient_table) >= 4L) {
+    matched <- intersect(names(coefficients), rownames(coefficient_table))
+    p_values[matched] <- coefficient_table[matched, 4L]
+  }
+  p_values
+}
+
+.ndrlm_fit_response <- function(fit) {
+  metadata <- .ndrlm_fit_metadata(fit)
+  metadata$response %||% fit$response %||% NULL
+}
+
+.ndrlm_lm_formula <- function(response, predictors, env = parent.frame()) {
+  terms <- lapply(predictors, as.name)
+  rhs <- if (length(terms) == 1L) terms[[1L]] else
+    Reduce(function(left, right) call("+", left, right), terms)
+  formula <- call("~", as.name(response), rhs)
+  class(formula) <- "formula"
+  environment(formula) <- env
+  formula
+}
+
 .ndrlm_fit_one <- function(y, x, response, regression, alpha, lambda, loess_span) {
   original_names <- colnames(x)
-  safe_names <- paste0(".x", seq_len(ncol(x)))
+  safe_names <- make.unique(c(".response", make.names(original_names)))[-1L]
   safe_x <- x
   colnames(safe_x) <- safe_names
   data <- data.frame(.response = as.numeric(y), safe_x, check.names = FALSE)
@@ -92,19 +160,25 @@
   if (nrow(train) < 3L) stop("Too few complete observations for regression.", call. = FALSE)
   formula <- stats::reformulate(safe_names, response = ".response")
   if (regression == "lm") {
-    fit <- stats::lm(formula, data = train)
+    lm_data <- data.frame(.response = as.numeric(y), x, check.names = FALSE)
+    lm_train <- lm_data[keep, , drop = FALSE]
+    lm_formula <- .ndrlm_lm_formula(".response", original_names)
+    fit <- stats::lm(lm_formula, data = lm_train)
     fitted <- rep(NA_real_, nrow(data)); fitted[keep] <- stats::fitted(fit)
     coefficients <- stats::coef(fit)[-1L]
     names(coefficients) <- original_names
     p_values <- rep(NA_real_, length(original_names))
     names(p_values) <- original_names
     coefficient_table <- summary(fit)$coefficients
-    rows <- intersect(safe_names, rownames(coefficient_table))
-    p_values[match(rows, safe_names)] <- coefficient_table[rows, 4L]
-    return(list(method = regression, fit = fit, fitted = fitted,
-                residuals = data$.response - fitted, response = response,
-                x_names = original_names, safe_names = safe_names,
-                coefficients = coefficients, p_values = p_values))
+    rows <- intersect(original_names, rownames(coefficient_table))
+    p_values[match(rows, original_names)] <- coefficient_table[rows, 4L]
+    attr(fit, "ndrlm_metadata") <- list(
+      method = regression, fitted = fitted,
+      residuals = data$.response - fitted, response = response,
+      x_names = original_names, safe_names = original_names,
+      coefficients = coefficients, p_values = p_values
+    )
+    return(fit)
   }
   if (regression == "loess") {
     fit <- stats::loess(formula, data = train, span = loess_span,
@@ -151,6 +225,17 @@
 
 .ndrlm_predict_one <- function(model, newdata, se.fit = FALSE,
                                interval = "none", level = 0.95, ...) {
+  if (inherits(model, "lm")) {
+    metadata <- .ndrlm_fit_metadata(model)
+    if (length(metadata)) {
+      x <- as.data.frame(newdata[, metadata$x_names, drop = FALSE])
+      colnames(x) <- metadata$safe_names
+    } else {
+      x <- as.data.frame(newdata)
+    }
+    return(stats::predict(model, newdata = x, se.fit = se.fit,
+                          interval = interval, level = level, ...))
+  }
   x <- as.data.frame(newdata[, model$x_names, drop = FALSE])
   colnames(x) <- model$safe_names
   if (model$method == "lm") {
@@ -180,7 +265,8 @@
   for (i in seq_len(ncol(dep))) {
     fits[[i]] <- .ndrlm_fit_one(dep[[i]], indep, colnames(dep)[i], regression,
                                 alpha, lambda, loess_span)
-    metric[i] <- .nda_metric(dep[[i]], fits[[i]]$fitted, fits[[i]], target)
+    metric[i] <- .nda_metric(dep[[i]], .ndrlm_fitted_values(fits[[i]]),
+                             fits[[i]], target)
   }
   names(fits) <- colnames(dep)
   names(metric) <- colnames(dep)
@@ -189,7 +275,121 @@
   list(fits = if (keep_fits) fits else NULL, metric = metric, aggregate = aggregate)
 }
 
-#' Network-based dimensionality reduction and regression
+#' Network-Based Dimensionality Reduction and Regression
+#'
+#' Fits supervised models to original or NDA-reduced input and output
+#' variables, with optional NSGA-II tuning.
+#'
+#' @param Y Numeric dependent-variable data.
+#' @param X Numeric independent-variable data with the same rows as \code{Y}.
+#' @param latents Use latent variables for inputs (\code{"in"}), outputs
+#'   (\code{"out"}), both, or neither.
+#' @param dircon Retain NDA-excluded variables as direct predictors or responses.
+#' @param optimize Tune indicator weights and four NDA thresholds with NSGA-II.
+#' @param target One of adjusted R-squared, R-squared, MAE, MAPE, MASE, MSE,
+#'   RMSE, AIC, or BIC.
+#' @param rel_weight Constrain and normalize indicator weights to be
+#'   nonnegative relative weights.
+#' @param cor_method,cor_type,min_comm,Gamma,null_model_type,mod_mode,use_rotation,rotation
+#'   Arguments forwarded to \code{ndr}.
+#' @param pareto Keep one objective per original dependent variable during
+#'   NSGA-II optimization.
+#' @param fit_weights Optional weights for aggregating response-specific
+#'   objectives when their number matches the fitted responses.
+#' @param lower.bounds.x,upper.bounds.x Lower and upper NSGA-II bounds for
+#'   input-indicator weights.
+#' @param lower.bounds.latentx,upper.bounds.latentx Bounds for input-side
+#'   \code{min_evalue}, \code{min_communality}, \code{com_communalities}, and
+#'   \code{min_R}.
+#' @param lower.bounds.y,upper.bounds.y Lower and upper NSGA-II bounds for
+#'   output-indicator weights.
+#' @param lower.bounds.latenty,upper.bounds.latenty Bounds for the four
+#'   output-side NDA thresholds.
+#' @param popsize,generations,cprob,cdist,mprob,mdist NSGA-II population,
+#'   generation, crossover, and mutation settings passed to \code{mco::nsga2}.
+#' @param seed Optional seed; repeated optimization runs use consecutive seeds.
+#' @param regression Regression engine: ordinary least squares (\code{"lm"}),
+#'   ridge (\code{"ridge"}), LOESS (\code{"loess"}), or elastic net
+#'   (\code{"elastic_net"}).
+#' @param model Backward-friendly alias that overrides \code{regression}.
+#' @param alpha Elastic-net mixing value in [0, 1]. Ridge always uses zero.
+#' @param lambda Optional penalization value. If omitted, cross-validation
+#'   selects lambda.
+#' @param loess_span LOESS smoothing span.
+#' @param restarts Number of independent NSGA-II runs; the best feasible
+#'   candidate is refitted.
+#' @param parallel,cores,sparsecalc,centrality,standardized Performance and
+#'   latent-score settings forwarded to \code{ndr}.
+#' @param membership.X,membership.Y Optional fixed NDA community memberships
+#'   for the input and output sides.
+#'
+#' @details
+#' NDRLM is predictive and exploratory; its paths do not by themselves
+#' establish causal effects. Ridge and elastic net use \pkg{glmnet}. LOESS is
+#' intended for small predictor sets and does not provide linear-path
+#' significance tests. AIC and BIC for non-likelihood engines are
+#' residual-based approximations.
+#'
+#' The class and structure of each element of \code{fits} depend on the selected
+#' regression engine. With \code{regression = "lm"}, each \code{fits[[i]]} is a
+#' genuine \code{lm} object and can be passed directly to \code{summary},
+#' \code{coef}, \code{AIC}, \code{BIC}, \code{predict.lm}, and
+#' \code{lm.beta::lm.beta}. The \pkg{lm.beta} package is meaningful only for
+#' ordinary least-squares fits; it must not be applied to ridge, elastic-net,
+#' or LOESS fits.
+#'
+#' With \code{regression = "ridge"}, \code{"elastic_net"}, or \code{"loess"},
+#' each \code{fits[[i]]} is an NDRLM engine wrapper. It contains the engine name
+#' in \code{method}, the underlying fitted object in \code{fit}, and common
+#' fitted-value, residual, coefficient, and predictor metadata. Penalized fits
+#' additionally store the selected \code{lambda} and effective \code{alpha}.
+#' For engine-independent code, use \code{summary}, \code{predict},
+#' \code{fitted}, \code{residuals}, and \code{plot} on the enclosing
+#' \code{ndrlm} object instead of relying on these internal fields.
+#'
+#' The NDRLM methods retain backward compatibility with both legacy objects
+#' that stored ordinary least-squares fits directly and early 0.3.0 objects
+#' that wrapped ordinary least-squares fits. Newly fitted ordinary
+#' least-squares models use direct \code{lm} objects, while the newer
+#' non-\code{lm} engines retain their wrappers.
+#'
+#' @return An \code{ndrlm} object containing response-specific metrics, fitted
+#'   NDA objects, optimized hyperparameters, training designs, NSGA-II results,
+#'   an \code{NSGA_trace} evaluation history when optimization is enabled, and
+#'   a response-named \code{fits} list. Elements of \code{fits} are
+#'   \code{lm} objects for ordinary least squares and NDRLM engine wrappers for
+#'   ridge, elastic net, and LOESS.
+#'
+#' @references Kosztyan, Z. T., Kurbucz, M. T., Katona, A. I., and Khan, Z.
+#'   Network-based dimensionality reduction and structural modeling.
+#'
+#' @examples
+#' X <- as.data.frame(freeny.x)
+#' Y <- data.frame(income = freeny.y)
+#'
+#' fit_lm <- ndrlm(Y, X, latents = "none", regression = "lm")
+#' inherits(fit_lm$fits[[1]], "lm")
+#' summary(fit_lm$fits[[1]])
+#' predict(fit_lm, X[1:3, ])
+#'
+#' if (requireNamespace("lm.beta", quietly = TRUE)) {
+#'   summary(lm.beta::lm.beta(fit_lm$fits[[1]]))
+#' }
+#'
+#' if (requireNamespace("glmnet", quietly = TRUE)) {
+#'   fit_ridge <- ndrlm(Y, X, latents = "none", regression = "ridge",
+#'                      lambda = 0.1)
+#'   fit_ridge$fits[[1]]$method
+#'   predict(fit_ridge, X[1:3, ])
+#' }
+#'
+#' if (requireNamespace("glmnet", quietly = TRUE)) {
+#'   fit_en <- ndrlm(Y, X, latents = "none", regression = "elastic_net",
+#'                   alpha = 0.5, lambda = 0.1)
+#'   predict(fit_en, X[1:3, ])
+#' }
+#'
+#' @keywords multivariate
 #' @export
 ndrlm <- function(Y, X, latents = "in", dircon = FALSE, optimize = TRUE,
                   target = "adj.r.square", rel_weight = FALSE,
@@ -288,6 +488,11 @@ ndrlm <- function(Y, X, latents = "in", dircon = FALSE, optimize = TRUE,
   }
 
   maximize <- target %in% c("adj.r.square", "r.square")
+  trace_state <- new.env(parent = emptyenv())
+  trace_state$recording <- FALSE
+  trace_state$restart <- 0L
+  trace_state$evaluation <- 0L
+  trace_state$rows <- list()
   objective <- function(hyperparams) {
     value <- tryCatch(build(hyperparams, keep_fits = FALSE)$metric,
       error = function(e) rep(if (maximize) -1e12 else 1e12,
@@ -296,11 +501,25 @@ ndrlm <- function(Y, X, latents = "in", dircon = FALSE, optimize = TRUE,
                                              length(value))
     if (pareto && length(value) != ncol(Y)) value <- rep(mean(value), ncol(Y))
     if (!pareto) value <- mean(value)
-    if (maximize) -value else value
+    cost <- if (maximize) -value else value
+    if (isTRUE(trace_state$recording)) {
+      trace_state$evaluation <- trace_state$evaluation + 1L
+      scalar_cost <- mean(cost)
+      target_value <- if (maximize) -scalar_cost else scalar_cost
+      trace_state$rows[[length(trace_state$rows) + 1L]] <- data.frame(
+        restart = trace_state$restart,
+        evaluation = trace_state$evaluation,
+        generation = max(0L, ceiling(trace_state$evaluation / popsize) - 1L),
+        target_value = target_value,
+        cost = scalar_cost
+      )
+    }
+    cost
   }
 
   optimized <- FALSE
   NSGA <- NULL
+  NSGA_trace <- NULL
   hyperparams <- initial
   if (optimize && length(initial)) {
     if (!requireNamespace("mco", quietly = TRUE)) {
@@ -311,11 +530,15 @@ ndrlm <- function(Y, X, latents = "in", dircon = FALSE, optimize = TRUE,
     candidate_costs <- numeric()
     for (run in seq_len(as.integer(restarts))) {
       if (!is.null(seed)) set.seed(seed + run - 1L)
+      trace_state$recording <- TRUE
+      trace_state$restart <- run
+      trace_state$evaluation <- 0L
       runs[[run]] <- mco::nsga2(objective, idim = length(initial),
         odim = if (pareto) ncol(Y) else 1L, lower.bounds = lower,
         upper.bounds = upper, popsize = popsize, generations = generations,
         cprob = cprob, cdist = cdist, mprob = mprob, mdist = mdist,
         vectorized = FALSE)
+      trace_state$recording <- FALSE
       for (row in seq_len(nrow(runs[[run]]$par))) {
         candidate <- runs[[run]]$par[row, ]
         value <- objective(candidate)
@@ -330,6 +553,17 @@ ndrlm <- function(Y, X, latents = "in", dircon = FALSE, optimize = TRUE,
     } else warning("Optimization did not find a feasible solution; initial values were used.",
                    call. = FALSE)
     NSGA <- if (length(runs) == 1L) runs[[1L]] else runs
+    if (length(trace_state$rows)) {
+      NSGA_trace <- do.call(rbind, trace_state$rows)
+      split_index <- split(seq_len(nrow(NSGA_trace)), NSGA_trace$restart)
+      NSGA_trace$best_target <- NA_real_
+      for (index in split_index) {
+        NSGA_trace$best_target[index] <- if (maximize) {
+          cummax(NSGA_trace$target_value[index])
+        } else cummin(NSGA_trace$target_value[index])
+      }
+      rownames(NSGA_trace) <- NULL
+    }
   }
   final <- tryCatch(build(hyperparams, keep_fits = TRUE), error = function(e) {
     if (!identical(hyperparams, initial)) {
@@ -371,7 +605,10 @@ ndrlm <- function(Y, X, latents = "in", dircon = FALSE, optimize = TRUE,
     result$NDAout_com_communalities <- parsed$params.Y[3L]
     result$NDAout_min_R <- parsed$params.Y[4L]
   }
-  if (optimize) result$NSGA <- NSGA
+  if (optimize) {
+    result$NSGA <- NSGA
+    result$NSGA_trace <- NSGA_trace
+  }
   class(result) <- c("ndrlm", "list")
   result
 }

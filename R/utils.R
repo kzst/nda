@@ -19,6 +19,37 @@
   if (is.null(x)) y else x
 }
 
+.nda_plot_shapes <- function(shape, n, automatic) {
+  if (is.null(shape) || !length(shape)) shape <- "automatic"
+  if (length(shape) == 1L && identical(tolower(as.character(shape)), "automatic")) {
+    return(rep(automatic, length.out = n))
+  }
+  if (!is.character(shape) || anyNA(shape) || !length(shape) ||
+      !length(shape) %in% c(1L, n)) {
+    stop("shape must be 'automatic', one shape, or one shape per node.",
+         call. = FALSE)
+  }
+  rep(shape, length.out = n)
+}
+
+.nda_edge_widths <- function(weight, range = c(1, 6)) {
+  if (!is.numeric(range) || length(range) != 2L || any(!is.finite(range)) ||
+      range[1L] < 0 || range[2L] < range[1L]) {
+    stop("edge.width.range must contain two finite increasing non-negative values.",
+         call. = FALSE)
+  }
+  magnitude <- abs(as.numeric(weight))
+  if (!length(magnitude)) return(numeric())
+  finite <- is.finite(magnitude)
+  if (!any(finite)) return(rep(mean(range), length(magnitude)))
+  magnitude[!finite] <- 0
+  limits <- range(magnitude[finite], na.rm = TRUE)
+  if (!all(finite) || diff(limits) <= sqrt(.Machine$double.eps)) {
+    return(rep(mean(range), length(magnitude)))
+  }
+  range[1L] + diff(range) * (magnitude - limits[1L]) / diff(limits)
+}
+
 .nda_numeric_matrix <- function(x, name = "x", min_cols = 1L) {
   if (inherits(x, "Matrix")) {
     if (!is.numeric(x)) stop(name, " must be numeric.", call. = FALSE)

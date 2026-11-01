@@ -3,10 +3,12 @@
 \title{Plot an NDA Association Network}
 \description{Creates a printable static \pkg{igraph} or interactive \pkg{visNetwork} network object. Assignment does not draw; printing the result draws it.}
 \usage{
-\method{plot}{nda}(x, cuts = 0.3, interactive = TRUE, edgescale = 1,
-    labeldist = -1.5, show_weights = FALSE, shapes = "circle",
-    edge.color.links = TRUE,
-    edge.colors = c("darkred", "grey", "darkblue"),
+\method{plot}{nda}(x, cuts = 0.3, interactive = FALSE, edgescale = 1,
+    labeldist = -1.5, show_weights = FALSE, shapes = NULL,
+    shape = "automatic", edge.color.links = TRUE, edge.colors = NULL,
+    positive.color = "#009E73", negative.color = "#C62828",
+    neutral.color = "grey65", positive.lty = 1, negative.lty = 1,
+    neutral.lty = 1, edge.width.range = c(1, 6),
     edge.label.size = 10, edge.label.color = "#333333",
     vertex.label.size = 12, vertex.label.color = "black",
     layout = "nicely", igraph_args = list(), visnetwork_args = list(), ...)
@@ -18,9 +20,19 @@
 \item{edgescale}{Edge-width multiplier.}
 \item{labeldist}{Static vertex-label distance.}
 \item{show_weights}{Label edges with unsquared correlations for row-level models and supplied similarities for association-matrix models.}
-\item{shapes}{One or more vertex shapes, recycled over indicators.}
-\item{edge.color.links}{Color links by signed association or by the association-matrix minimum, median, and maximum.}
-\item{edge.colors}{Three-color low/middle/high scale.}
+\item{shape}{\code{"automatic"} uses one common rectangle for every indicator.
+Alternatively, supply one shape or one shape per node. Community membership is
+shown by colour, not shape.}
+\item{shapes}{Backward-compatible alias for \code{shape}.}
+\item{edge.color.links}{Colour links by the sign of the unsquared association.}
+\item{edge.colors}{Optional legacy low/middle/high colour scale. When
+\code{NULL}, positive, negative, and zero associations use the three explicit
+colours below.}
+\item{positive.color,negative.color,neutral.color}{Default signed edge colours.}
+\item{positive.lty,negative.lty,neutral.lty}{Line types for signed edges. All
+are solid by default.}
+\item{edge.width.range}{Minimum and maximum edge widths. Absolute association
+magnitude is rescaled to this interval.}
 \item{edge.label.size,edge.label.color}{Edge-label appearance.}
 \item{vertex.label.size,vertex.label.color}{Vertex-label appearance.}
 \item{layout}{An igraph layout suffix such as \code{"nicely"}, \code{"fr"}, or \code{"circle"}.}

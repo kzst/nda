@@ -14,10 +14,14 @@
 
 #' Plot an NDA association network
 #' @export
-plot.nda <- function(x, cuts = 0.3, interactive = TRUE, edgescale = 1,
+plot.nda <- function(x, cuts = 0.3, interactive = FALSE, edgescale = 1,
                      labeldist = -1.5, show_weights = FALSE,
-                     shapes = "circle", edge.color.links = TRUE,
-                     edge.colors = c("darkred", "grey", "darkblue"),
+                     shapes = NULL, shape = "automatic",
+                     edge.color.links = TRUE, edge.colors = NULL,
+                     positive.color = "#009E73", negative.color = "#C62828",
+                     neutral.color = "grey65", positive.lty = 1,
+                     negative.lty = 1, neutral.lty = 1,
+                     edge.width.range = c(1, 6),
                      edge.label.size = 10, edge.label.color = "#333333",
                      vertex.label.size = 12, vertex.label.color = "black",
                      layout = "nicely", igraph_args = list(),
@@ -72,7 +76,8 @@ plot.nda <- function(x, cuts = 0.3, interactive = TRUE, edgescale = 1,
   palette <- grDevices::hcl.colors(max(1L, groups), "Dark 3")
   vertex_color <- ifelse(membership > 0L,
                          palette[pmax(1L, membership)], "grey80")
-  shape <- rep(shapes, length.out = igraph::vcount(graph))
+  if (!is.null(shapes)) shape <- shapes
+  shape <- .nda_plot_shapes(shape, igraph::vcount(graph), "rectangle")
   edge_pairs <- igraph::as_edgelist(graph, names = FALSE)
   association <- x$correlation
   if (is.null(association)) association <- raw_similarity
@@ -100,17 +105,33 @@ plot.nda <- function(x, cuts = 0.3, interactive = TRUE, edgescale = 1,
     } else index <- 1 + 100 * (pmax(-1, pmin(1, z)) + 1) / 2
     pal[pmax(1L, pmin(101L, round(index)))]
   }
-  edge_color <- if (edge.color.links) scale_colors(association_values) else "grey55"
+  if (!is.null(edge.colors)) {
+    if (!is.character(edge.colors) || length(edge.colors) < 2L) {
+      stop("edge.colors must contain at least two colours.", call. = FALSE)
+    }
+    edge_color <- if (edge.color.links) scale_colors(association_values) else neutral.color
+  } else {
+    edge_color <- if (edge.color.links) {
+      ifelse(association_values < 0, negative.color,
+             ifelse(association_values > 0, positive.color, neutral.color))
+    } else rep(neutral.color, length(association_values))
+  }
+  edge_lty <- ifelse(association_values < 0, negative.lty,
+                     ifelse(association_values > 0, positive.lty, neutral.lty))
+  edge_width <- .nda_edge_widths(association_values, edge.width.range)
+  if (!is.null(edgescale) && is.numeric(edgescale) && length(edgescale) == 1L &&
+      is.finite(edgescale) && edgescale >= 0) edge_width <- edge_width * edgescale
   edge_label <- if (show_weights) format(round(association_values, 3), trim = TRUE) else ""
   igraph::V(graph)$color <- vertex_color
   igraph::V(graph)$shape <- shape
   igraph::V(graph)$label.color <- vertex.label.color
   igraph::V(graph)$label.cex <- vertex.label.size / 12
   igraph::E(graph)$color <- edge_color
+  igraph::E(graph)$lty <- edge_lty
   igraph::E(graph)$label <- edge_label
   igraph::E(graph)$label.color <- edge.label.color
   igraph::E(graph)$label.cex <- edge.label.size / 12
-  igraph::E(graph)$width <- 1 + edgescale * 4 * abs(igraph::E(graph)$weight)
+  igraph::E(graph)$width <- edge_width
 
   if (interactive) {
     nodes <- data.frame(
@@ -122,8 +143,9 @@ plot.nda <- function(x, cuts = 0.3, interactive = TRUE, edgescale = 1,
       stringsAsFactors = FALSE)
     edges <- data.frame(
       from = edge_pairs[, 1L], to = edge_pairs[, 2L],
-      width = 1 + edgescale * 4 * abs(igraph::E(graph)$weight),
+      width = edge_width,
       color = edge_color, label = edge_label,
+      dashes = edge_lty != 1,
       arrows = if (directed) "to" else "",
       font.size = edge.label.size, font.color = edge.label.color,
       stringsAsFactors = FALSE)

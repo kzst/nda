@@ -46,11 +46,12 @@ print.summary.ndrlm <- function(x, digits = getOption("digits"), ...) {
   for (name in names(x$fits)) {
     fit <- x$fits[[name]]
     cat("\nFit for", name, "\n")
-    if (fit$method == "lm") {
-      print(summary(fit$fit), digits = digits)
+    if (identical(.ndrlm_fit_method(fit), "lm")) {
+      print(summary(.ndrlm_underlying_fit(fit)), digits = digits)
     } else {
-      table <- data.frame(coefficient = names(fit$coefficients),
-                          estimate = as.numeric(fit$coefficients), row.names = NULL)
+      coefficients <- .ndrlm_fit_coefficients(fit)
+      table <- data.frame(coefficient = names(coefficients),
+                          estimate = as.numeric(coefficients), row.names = NULL)
       table$estimate <- round(table$estimate, digits)
       print(table, row.names = FALSE)
       if (!is.null(fit$lambda)) cat("Selected lambda:", format(fit$lambda), "\n")

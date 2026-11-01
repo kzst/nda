@@ -2,3 +2,12 @@
 ^\.Rproj\.user$
 ^\.positai$
 ^\.claude$
+^vignette-preview$
+^vignette-verified$
+^vignette-backup-.*$
+^backup-.*$
+^build_verified_vignettes\.R$
+^VIGNETTE_REVISION_NOTES\.md$
+^nda-vignette-revision-.*\.zip$
+^\.Rhistory$
+^\.git$

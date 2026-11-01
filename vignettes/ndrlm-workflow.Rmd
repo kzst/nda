@@ -1,0 +1,308 @@
+---
+title: "Supervised NDRLM: latent-variable regression and optimization"
+author: "Zsolt T. Kosztyan, Marcell T. Kurbucz, Attila I. Katona, and Zahid Khan"
+bibliography: references.bib
+link-citations: true
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: true
+    css: vignette.css
+vignette: >
+  %\VignetteIndexEntry{Supervised NDRLM: latent-variable regression and optimization}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 8,
+  fig.height = 5.5,
+  warning = FALSE,
+  message = FALSE
+)
+library(nda)
+set.seed(42)
+```
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var toc = document.getElementById("TOC");
+  if (!toc) return;
+  toc.setAttribute("aria-label", "Table of contents");
+  if (!toc.querySelector(".toc-title")) {
+    var title = document.createElement("div");
+    title.className = "toc-title";
+    title.textContent = "On this page";
+    toc.insertBefore(title, toc.firstChild);
+  }
+});
+</script>
+
+# What `ndrlm()` adds
+
+`ndrlm()` combines network-based dimensionality reduction with one supervised
+model per dependent variable. It can reduce the input side, the output side,
+both sides, or neither; retain excluded indicators as direct connections; fit
+OLS, ridge, elastic-net, or LOESS models; and tune NDA weights and thresholds
+with NSGA-II.
+
+<div class="visual-pipeline">
+<div class="pipeline-step"><strong>1. Reduce</strong>Observed indicators form input and/or output latent variables.</div>
+<div class="pipeline-step"><strong>2. Regress</strong>Latent and direct variables enter the selected regression engine.</div>
+<div class="pipeline-step"><strong>3. Evaluate</strong>Metrics, predictions, residuals, paths, and optimization history are retained.</div>
+</div>
+
+NDRLM is predictive and exploratory. A fitted path is not, by itself, evidence
+of a causal effect. Its role as a data-driven benchmark for structural models
+is developed in @Kosztyan2026NBSEM.
+
+# Published latent-input example
+
+The example follows the article's low-sample-size `mtcars` analysis. The ten
+input indicators form two communities. The first groups `cyl`, `hp`, `qsec`,
+`vs`, and `carb`; the second groups `disp`, `drat`, `wt`, `am`, and `gear`.
+The two resulting input latent variables predict `mpg`.
+
+```{r latent-input-fit}
+X_car <- mtcars[, setdiff(names(mtcars), "mpg")]
+Y_car <- mtcars["mpg"]
+input_membership <- c(
+  cyl = 1, disp = 2, hp = 1, drat = 2, wt = 2,
+  qsec = 1, vs = 1, am = 2, gear = 2, carb = 1
+)
+
+fit_latent <- ndrlm(
+  Y_car, X_car,
+  latents = "in",
+  optimize = FALSE,
+  membership.X = input_membership,
+  regression = "lm",
+  seed = 42
+)
+fit_latent
+summary(fit_latent)
+```
+
+The NDA object remains available inside the supervised model, so the
+measurement structure is inspectable rather than hidden.
+
+```{r latent-input-results}
+data.frame(
+  indicator = colnames(fit_latent$NDAin$R),
+  community = unname(fit_latent$NDAin$membership)
+)
+round(fit_latent$NDAin$loadings, 3)
+coef(fit_latent$fits[[1]])
+fit_latent$fit_stats
+```
+
+The latent scores are computed only from their own community indicators. The
+OLS coefficients then describe the fitted relationship between each input
+latent variable and `mpg`.
+
+# Predictions and residual diagnostics
+
+```{r latent-prediction}
+prediction <- predict(fit_latent, X_car)
+diagnostic <- data.frame(
+  observed = Y_car$mpg,
+  fitted = fitted(fit_latent)$mpg,
+  residual = residuals(fit_latent)$mpg
+)
+head(prediction)
+head(diagnostic)
+```
+
+```{r diagnostic-figure, fig.cap="Observed versus fitted fuel efficiency and residual diagnostic for the latent-input model."}
+op <- par(mfrow = c(1, 2), mar = c(4, 4, 3, 1))
+plot(diagnostic$observed, diagnostic$fitted,
+     pch = 19, col = "#0072B2",
+     xlab = "Observed mpg", ylab = "Fitted mpg",
+     main = "Observed versus fitted")
+abline(0, 1, col = "grey45", lty = 2)
+plot(diagnostic$fitted, diagnostic$residual,
+     pch = 19, col = "#009E73",
+     xlab = "Fitted mpg", ylab = "Residual",
+     main = "Residual pattern")
+abline(h = 0, col = "grey45", lty = 2)
+par(op)
+```
+
+These plots are descriptive in-sample diagnostics. A predictive study should
+evaluate the complete reduction-and-regression pipeline using held-out data or
+resampling.
+
+# Input, output, and full latent models
+
+| `latents` | Predictors used by regression | Responses used by regression |
+|---|---|---|
+| `"none"` | observed `X` | observed `Y` |
+| `"in"` | input NDA scores | observed `Y` |
+| `"out"` | observed `X` | output NDA scores |
+| `"both"` | input NDA scores | output NDA scores |
+
+The next executable example reduces both sides. Two observed response
+indicators form one output latent variable. With `dircon = TRUE`, membership
+zero would retain an excluded indicator as a direct observed variable.
+
+```{r both-sides-fit}
+X_both <- mtcars[, c("cyl", "disp", "hp", "wt", "qsec", "vs", "am", "gear")]
+Y_both <- mtcars[, c("mpg", "drat")]
+
+fit_both <- ndrlm(
+  Y_both, X_both,
+  latents = "both",
+  optimize = FALSE,
+  membership.X = c(1, 2, 1, 2, 1, 1, 2, 2),
+  membership.Y = c(1, 1),
+  regression = "lm",
+  seed = 42
+)
+fit_both$NDAin$membership
+fit_both$NDAout$membership
+fit_both$indep_names
+fit_both$dep_names
+head(fitted(fit_both))
+```
+
+# Regression engines with visible results
+
+The enclosing NDRLM interface is the same for every engine. OLS provides
+coefficient tests and intervals. Ridge stabilizes correlated predictors.
+Elastic net combines shrinkage with coefficient selection. LOESS provides a
+small-predictor nonlinear model but no linear-path significance tests.
+
+```{r engine-comparison}
+fit_ols <- fit_latent
+
+if (requireNamespace("glmnet", quietly = TRUE)) {
+  fit_ridge <- ndrlm(
+    Y_car, X_car,
+    latents = "in", optimize = FALSE,
+    membership.X = input_membership,
+    regression = "ridge", lambda = 0.05,
+    seed = 42
+  )
+  fit_elastic <- ndrlm(
+    Y_car, X_car,
+    latents = "in", optimize = FALSE,
+    membership.X = input_membership,
+    regression = "elastic_net", alpha = 0.5, lambda = 0.05,
+    seed = 42
+  )
+  engine_results <- rbind(
+    OLS = fit_ols$fit_stats,
+    Ridge = fit_ridge$fit_stats,
+    Elastic_net = fit_elastic$fit_stats
+  )
+  engine_results
+  round(cbind(
+    ridge = fit_ridge$fits[[1]]$coefficients,
+    elastic_net = fit_elastic$fits[[1]]$coefficients
+  ), 3)
+} else {
+  cat("Install the suggested package 'glmnet' to run ridge and elastic net.\n")
+}
+```
+
+```{r loess-fit}
+fit_loess <- ndrlm(
+  Y_car,
+  X_car["wt"],
+  latents = "none",
+  regression = "loess",
+  loess_span = 0.80
+)
+head(predict(fit_loess, X_car["wt"]))
+fit_loess$fit_stats
+```
+
+Raw coefficients from different engines or differently scaled predictors are
+not standardized effect-size comparisons. Compare prediction metrics on a
+common validation design when prediction is the scientific goal.
+
+# NSGA-II optimization and convergence history
+
+When `optimize = TRUE`, NSGA-II tunes indicator weights and the four NDA
+thresholds. This deliberately small run demonstrates the complete interface.
+Larger populations, more generations, and repeated runs are appropriate for a
+final analysis.
+
+```{r optimization}
+fit_optimized <- ndrlm(
+  Y_car, X_car,
+  latents = "in",
+  membership.X = input_membership,
+  optimize = TRUE,
+  target = "adj.r.square",
+  rel_weight = TRUE,
+  lower.bounds.x = rep(0.5, ncol(X_car)),
+  upper.bounds.x = rep(1.5, ncol(X_car)),
+  lower.bounds.latentx = c(0, 0, 0, 0),
+  upper.bounds.latentx = c(0.01, 0.01, 0.01, 0.01),
+  popsize = 4,
+  generations = 3,
+  restarts = 1,
+  regression = "lm",
+  seed = 42
+)
+fit_optimized$optimized
+fit_optimized$fval
+round(fit_optimized$NDAin_weight, 3)
+tail(fit_optimized$NSGA_trace)
+```
+
+```{r convergence-figure, fig.cap="Best adjusted R-squared encountered during the compact NSGA-II run."}
+trace <- fit_optimized$NSGA_trace
+plot(
+  trace$evaluation,
+  trace$best_target,
+  type = "s", lwd = 2, col = "#0072B2",
+  xlab = "Objective evaluation",
+  ylab = "Best adjusted R-squared",
+  main = "NSGA-II search history"
+)
+points(trace$evaluation, trace$target_value,
+       pch = 16, cex = 0.65, col = grDevices::adjustcolor("grey35", 0.45))
+lines(trace$evaluation, trace$best_target, lwd = 2, col = "#0072B2")
+```
+
+The grey points are evaluated candidates; the blue step line is the best
+target value encountered so far. A short flat segment is not proof of global
+convergence, but the trace makes search progress transparent and helps compare
+longer runs and restarts.
+
+# Latent path network
+
+```{r ndrlm-static-network, fig.cap="Latent-input NDRLM graph. Rectangles are observed indicators, circles are latent variables, and path colour carries sign."}
+path_network <- plot(
+  fit_latent,
+  sig = 1,
+  interactive = FALSE,
+  show_edge_labels = TRUE,
+  shape = "automatic"
+)
+path_network
+```
+
+Observed variables are rectangles and latent variables are circles, following
+standard structural-model notation. Each latent variable and its observed
+indicators share one community colour. Measurement loadings are grey. Positive
+regression paths are green, negative paths are red, and absolute magnitude is
+mapped to width separately within loadings and structural paths. All lines are
+solid by default. Colours, line types, shapes,
+and the minimum/maximum width can be overridden explicitly when a publication
+requires another convention.
+
+# References
+
+The references connect the original and generalized NDA methods to the package
+implementation and the supervised network-based structural extension
+[@Kosztyan2022; @Kosztyan2023; @Kosztyan2024; @Kosztyan2026Packages;
+@Kosztyan2026NBSEM].
+
+::: {#refs}
+:::

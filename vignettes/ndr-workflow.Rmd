@@ -1,0 +1,305 @@
+---
+title: "Generalized NDR: associations, communities, and latent scores"
+author: "Zsolt T. Kosztyan, Marcell T. Kurbucz, Attila I. Katona, and Zahid Khan"
+bibliography: references.bib
+link-citations: true
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: true
+    css: vignette.css
+vignette: >
+  %\VignetteIndexEntry{Generalized NDR: associations, communities, and latent scores}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 8,
+  fig.height = 5.5,
+  warning = FALSE,
+  message = FALSE
+)
+library(nda)
+set.seed(42)
+```
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var toc = document.getElementById("TOC");
+  if (!toc) return;
+  toc.setAttribute("aria-label", "Table of contents");
+  if (!toc.querySelector(".toc-title")) {
+    var title = document.createElement("div");
+    title.className = "toc-title";
+    title.textContent = "On this page";
+    toc.insertBefore(title, toc.firstChild);
+  }
+});
+</script>
+
+# What `ndr()` estimates
+
+Generalized network-based dimensionality reduction has three linked stages:
+
+1. estimate or receive an association matrix;
+2. detect communities in the squared-association network;
+3. construct one standardized, centrality-weighted score per retained
+   community.
+
+Squaring lets community detection use relationship strength. The unsquared
+association is retained for interpretation: positive edges are green,
+negative edges are red, and absolute magnitude controls width. Community
+membership is encoded by node colour only; indicators use one common shape by
+default. This visual grammar remains feasible when a model contains many
+communities.
+
+<div class="visual-pipeline">
+<div class="pipeline-step"><strong>Association</strong>Variables or observations become nodes.</div>
+<div class="pipeline-step"><strong>Community</strong>Strongly connected nodes form modules.</div>
+<div class="pipeline-step"><strong>Score</strong>Each retained module defines one latent score.</div>
+</div>
+
+# Full, partial, and semipartial networks
+
+The association method and conditioning type are independent choices.
+`cor_method` supports Pearson, Spearman, Kendall, distance, Gaussian-rank, and
+biweight associations. `cor_type` supports full, partial, and semipartial
+forms.
+
+```{r association-comparison}
+fit_full <- ndr(
+  swiss, cor_method = "pearson", cor_type = "full",
+  centrality = "pagerank", seed = 42
+)
+fit_partial <- ndr(
+  swiss, cor_method = "pearson", cor_type = "partial",
+  centrality = "pagerank", seed = 42
+)
+fit_semipartial <- ndr(
+  swiss, cor_method = "pearson", cor_type = "semipartial",
+  centrality = "authority", seed = 42
+)
+
+comparison <- data.frame(
+  network = c("full", "partial", "semipartial"),
+  factors = c(fit_full$factors, fit_partial$factors,
+              fit_semipartial$factors),
+  retained = c(sum(fit_full$membership > 0),
+               sum(fit_partial$membership > 0),
+               sum(fit_semipartial$membership > 0)),
+  directed = c(fit_full$stats$directed,
+               fit_partial$stats$directed,
+               fit_semipartial$stats$directed)
+)
+comparison
+```
+
+Partial association asks whether two indicators remain related after the
+others are controlled on both sides. Semipartial association controls one side
+and may be directed; hub and authority centralities can therefore answer
+different questions.
+
+# Inspecting communities and latent scores
+
+The full Pearson fit provides a compact example of the fitted object.
+
+```{r inspect-fit}
+fit_full
+summary(fit_full)
+fit_full$membership
+round(fit_full$loadings, 3)
+round(fit_full$communality, 3)
+fit_full$stats$community_sizes
+```
+
+`membership` identifies the score to which an indicator contributes.
+`loadings` connect indicators to the resulting scores; `communality` describes
+how well each indicator is represented. A zero membership means exclusion.
+
+For a confirmatory illustration, a fixed two-community structure makes the
+network and biplot stable across community-detection backends.
+
+```{r fixed-membership}
+visual_fit <- ndr(
+  swiss,
+  cor_method = "pearson",
+  membership = c(1, 1, 2, 2, 2, 0),
+  centrality = "eigenvector",
+  seed = 42
+)
+data.frame(
+  indicator = colnames(visual_fit$R),
+  community = unname(visual_fit$membership)
+)
+```
+
+# Predicting new observations
+
+```{r prediction}
+new_scores <- predict(visual_fit, swiss[1:5, , drop = FALSE])
+round(new_scores, 3)
+identical(predict(visual_fit), visual_fit$scores)
+```
+
+Prediction reuses the training means, scales, indicator weights, centrality
+weights, latent centring, latent scaling, and rotation. Consequently, scores
+for new observations remain on the fitted model's coordinate system.
+
+# Supplying an arbitrary matrix and clustering observations
+
+With `covar = TRUE`, `ndr()` accepts a square matrix directly. This makes the
+method usable beyond correlation matrices. The example below follows the
+clustering use described in @Kosztyan2023: Euclidean distances between the
+standardized Swiss observations are converted to similarities.
+
+```{r observation-clustering}
+scaled_swiss <- scale(swiss)
+distance_matrix <- as.matrix(dist(scaled_swiss))
+similarity_matrix <- 1 - normalize(distance_matrix)
+diag(similarity_matrix) <- 1
+
+cluster_fit <- ndr(
+  similarity_matrix,
+  covar = TRUE,
+  min_comm = 2,
+  centrality = "eigenvector",
+  seed = 42
+)
+cluster_fit$factors
+table(cluster_fit$membership)
+head(cluster_fit$membership, 10)
+is.null(cluster_fit$scores)
+```
+
+Here the nodes are observations rather than indicators. The returned
+membership is therefore an observation clustering. Since an arbitrary matrix
+contains no original row-level transformation, latent scores for new rows are
+not available in this mode.
+
+```{r clustering-network, fig.cap="Observation clusters obtained from a normalized Euclidean similarity matrix."}
+cluster_network <- plot(
+  cluster_fit,
+  cuts = 0.55,
+  interactive = FALSE,
+  show_weights = FALSE,
+  shape = "automatic",
+  vertex.label.size = 7,
+  layout = "fr"
+)
+cluster_network
+```
+
+# Static network and biplot
+
+```{r ndr-static-network, fig.cap="NDR association network: colour denotes community, edge colour denotes sign, and width denotes absolute association."}
+static_network <- plot(
+  visual_fit,
+  cuts = 0.3,
+  interactive = FALSE,
+  show_weights = TRUE,
+  shape = "automatic"
+)
+static_network
+```
+
+All observed indicators use the same shape. The two communities differ only
+by node colour. Solid green and red edges distinguish positive and negative
+associations; their thickness is scaled between the requested minimum and
+maximum widths.
+
+```{r ndr-biplot, fig.cap="Two-factor NDR biplot for the fixed Swiss-data communities."}
+score_biplot <- biplot(
+  visual_fit,
+  view_3D = FALSE,
+  interactive = FALSE
+)
+score_biplot
+```
+
+Nearby observation points have similar score profiles. Loading arrows indicate
+the direction of increasing indicator values. The graph explains association
+structure; the biplot explains observations and indicators in latent-score
+space. Neither should be read as a causal model.
+
+# Inference, filtering, and weighting
+
+The optional style controls can be demonstrated on the same fitted network.
+All observed indicators remain rectangles, and community uses colour only.
+Shapes are supplied in association-matrix column order.
+
+```{r custom-network, fig.cap="Explicit common node shape, custom signed colours, and bounded edge widths."}
+custom_network <- plot(
+  visual_fit, interactive = FALSE,
+  shape = rep("rectangle", ncol(visual_fit$R)),
+  positive.color = "#007A53", negative.color = "#B71C1C",
+  positive.lty = 1, negative.lty = 1,
+  edge.width.range = c(1, 5), show_weights = TRUE
+)
+custom_network
+```
+
+For a four-node graph, an individual shape vector could instead be
+`c("circle", "circle", "square", "square")`; shapes are not assigned by
+community. Optional `positive.lty` and `negative.lty` control line types.
+Both default to 1 (solid). Widths are scaled within the displayed graph;
+separate graphs require a common scale for direct width comparisons.
+
+Association tests and bootstrap intervals can be executed on a small example
+without dominating build time. The low replicate count below illustrates the
+returned structure; final inference should use a larger `n_boot`.
+
+```{r inference}
+inference_fit <- ndr(
+  swiss,
+  cor_method = "pearson",
+  test = TRUE,
+  p_adjust = "BH",
+  alpha = 0.10,
+  bootstrap = TRUE,
+  n_boot = 30,
+  conf = 0.90,
+  seed = 42
+)
+round(inference_fit$correlation_p, 3)
+head(inference_fit$stats$bootstrap$lower)
+head(inference_fit$stats$bootstrap$upper)
+```
+
+The principal filtering controls are `min_R`, `min_evalue`,
+`min_communality`, `com_communalities`, and `min_comm`. The `weight` argument
+supplies one finite score weight per indicator. These filters act at different
+stages: network formation, centrality screening, representation, loading
+separation, and minimum module size.
+
+# Sparse storage and reproducible settings
+
+```{r sparse-fit}
+sparse_fit <- ndr(
+  swiss,
+  min_R = 0.15,
+  sparsecalc = TRUE,
+  seed = 42
+)
+inherits(sparse_fit$R, "sparseMatrix")
+sparse_fit$factors
+sparse_fit$stats$community_sizes
+```
+
+Sparse storage is helpful after thresholding a large network. Parallel workers
+mainly benefit pairwise distance association and bootstrap calculations; small
+Pearson examples usually run faster sequentially. A fixed `seed` makes the
+stochastic parts reproducible.
+
+# References
+
+The cited literature covers the original NDA method, the generalized
+association-matrix formulation, the clustering interpretation, the software
+interface, and the supervised extension [@Kosztyan2022; @Kosztyan2023;
+@Kosztyan2024; @Kosztyan2026Packages; @Kosztyan2026NBSEM].
+
+::: {#refs}
+:::

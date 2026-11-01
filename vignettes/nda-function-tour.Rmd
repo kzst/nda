@@ -1,0 +1,313 @@
+---
+title: "A visual tour of the nda package"
+author: "Zsolt T. Kosztyan, Marcell T. Kurbucz, Attila I. Katona, and Zahid Khan"
+bibliography: references.bib
+link-citations: true
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: true
+    css: vignette.css
+vignette: >
+  %\VignetteIndexEntry{A visual tour of the nda package}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 8,
+  fig.height = 5,
+  warning = FALSE,
+  message = FALSE
+)
+library(nda)
+set.seed(42)
+```
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var toc = document.getElementById("TOC");
+  if (!toc) return;
+  toc.setAttribute("aria-label", "Table of contents");
+  if (!toc.querySelector(".toc-title")) {
+    var title = document.createElement("div");
+    title.className = "toc-title";
+    title.textContent = "On this page";
+    toc.insertBefore(title, toc.firstChild);
+  }
+});
+</script>
+
+# Purpose and workflow
+
+The **nda** package prepares structured data, measures full and conditional
+associations, selects indicators, constructs network-based latent variables,
+and links those latent variables to supervised response models. The methods
+follow the original and generalized NDA frameworks [@Kosztyan2022;
+@Kosztyan2024] and their supervised extension [@Kosztyan2026NBSEM].
+
+Every visible code block below is executable and is followed by the result it
+is intended to produce. The examples remain deliberately small so that the
+vignette can be built as part of a routine package check.
+
+<div class="visual-pipeline">
+<div class="pipeline-step"><strong>1. Prepare</strong><code>data_gen()</code> and <code>normalize()</code></div>
+<div class="pipeline-step"><strong>2. Associate</strong><code>dCov()</code>, <code>dCor()</code>, <code>pdCor()</code>, <code>spdCor()</code></div>
+<div class="pipeline-step"><strong>3. Select</strong><code>fs.KMO()</code> and <code>fs.dimred()</code></div>
+<div class="pipeline-step"><strong>4. Model</strong><code>ndr()</code> and <code>ndrlm()</code></div>
+</div>
+
+# Function map
+
+| Task | Functions and methods | Main result |
+|---|---|---|
+| Data preparation | `data_gen()`, `normalize()` | dense or sparse data with controlled scaling |
+| Association | `dCov()`, `dCor()`, `pdCor()`, `spdCor()` | full, partial, or semipartial dependence matrix |
+| Feature selection | `fs.KMO()`, `fs.dimred()` | retained indicators and named exclusions |
+| Unsupervised reduction | `ndr()` plus `print()`, `summary()`, `predict()`, `plot()`, `biplot()` | communities, latent scores, loadings, and graphs |
+| Supervised modelling | `ndrlm()` plus `print()`, `summary()`, `predict()`, `fitted()`, `residuals()`, `plot()` | latent-variable regression and path networks |
+
+# Structured data generation
+
+`data_gen()` creates reproducible block-structured examples. The first call
+returns a regular data frame; the second demonstrates the sparse output rather
+than merely documenting it.
+
+```{r data-generation}
+dense_data <- data_gen(
+  n = 40, m = 8, nfactors = 2,
+  lambda = 1, seed = 42
+)
+dim(dense_data)
+round(head(dense_data, 3), 3)
+```
+
+```{r sparse-generation}
+sparse_data <- data_gen(
+  n = 60, m = 30, nfactors = 3,
+  lambda = 1, sparse = TRUE, density = 0.20,
+  seed = 42
+)
+class(sparse_data)
+dim(sparse_data)
+Matrix::nnzero(sparse_data) / length(sparse_data)
+```
+
+The sparse representation is useful when the planted block structure is large
+but most entries are zero. It changes storage, not the conceptual meaning of
+rows, indicators, or blocks.
+
+# Normalization
+
+`normalize()` can rescale all values jointly, each row, or each column.
+Constant slices are mapped to the midpoint of the requested range.
+
+```{r normalization}
+small_matrix <- as.matrix(dense_data[1:5, 1:4])
+round(normalize(small_matrix), 3)
+round(normalize(small_matrix, type = "row", range = c(-1, 1)), 3)
+round(normalize(small_matrix, type = "col"), 3)
+```
+
+# Full and conditional distance association
+
+`dCov()` and `dCor()` measure unconditional dependence. `pdCor()` removes the
+other variables from both sides; `spdCor()` removes them from one side and can
+therefore be asymmetric.
+
+```{r distance-association}
+association_data <- mtcars[, c("mpg", "disp", "hp", "wt")]
+
+dcov_matrix <- dCov(association_data)
+dcor_matrix <- dCor(association_data)
+pdcor_matrix <- pdCor(association_data)
+spdcor_matrix <- spdCor(association_data)
+
+round(dcor_matrix, 3)
+round(pdcor_matrix, 3)
+round(spdcor_matrix, 3)
+```
+
+The bubble maps use a common scale, so differences in symbol size are directly
+comparable. Square area represents absolute association and colour carries the
+sign. This makes the reduction from full to conditional association more
+visible than a smooth raster image.
+
+```{r distance-correlation-figure, fig.cap="Full, partial, and semipartial distance associations on a common visual scale."}
+association_bubbles <- function(z, main) {
+  z <- as.matrix(z)
+  nr <- nrow(z); nc <- ncol(z)
+  plot(c(0.5, nc + 0.5), c(0.5, nr + 0.5), type = "n",
+       axes = FALSE, xlab = "", ylab = "", main = main, asp = 1)
+  grid <- expand.grid(x = seq_len(nc), y = seq_len(nr))
+  values <- as.vector(t(z[nr:1, , drop = FALSE]))
+  symbols(grid$x, grid$y,
+          squares = 0.65 * sqrt(pmin(1, abs(values))), inches = FALSE,
+          bg = ifelse(values < 0, "#C62828", "#009E73"),
+          fg = "white", add = TRUE)
+  axis(1, at = seq_len(nc), labels = colnames(z), las = 2)
+  axis(2, at = seq_len(nr), labels = rev(rownames(z)), las = 1)
+  text(grid$x, grid$y, labels = formatC(values, digits = 2, format = "f"),
+       cex = 0.65, col = "black")
+  box()
+}
+
+op <- par(mfrow = c(1, 3), mar = c(6, 5, 3, 1))
+association_bubbles(dcor_matrix, "Full dCor")
+association_bubbles(pdcor_matrix, "Partial dCor")
+association_bubbles(spdcor_matrix, "Semipartial dCor")
+par(op)
+```
+
+Permutation inference can also be shown without making the vignette heavy. A
+small number of permutations is sufficient for illustrating the returned
+object; a substantive study should use a larger value.
+
+```{r distance-test}
+dcor_test <- dCor(
+  association_data[, c("mpg", "wt", "hp")],
+  test = TRUE, R = 49, adjust = "BH"
+)
+round(dcor_test$r, 3)
+round(dcor_test$p, 3)
+```
+
+# Feature selection
+
+## KMO-based selection
+
+```{r kmo-selection}
+kmo_selected <- fs.KMO(swiss, min_MSA = 0.50)
+colnames(kmo_selected)
+attr(kmo_selected, "removed")
+```
+
+`fs.KMO()` removes the weakest indicator only when this is needed to reach the
+requested sampling adequacy.
+
+## Loading-based selection
+
+```{r loading-selection}
+pca <- prcomp(swiss, scale. = TRUE, rank. = 2)
+pca_selected <- fs.dimred(pca, swiss)
+colnames(pca_selected$retained_DF)
+names(pca_selected$dropped_low)
+names(pca_selected$dropped_com)
+```
+
+Weak representation and cross-loading are reported separately. The retained
+data remain available under both `retained_DF` and the legacy `remain_DF` name.
+
+# The two main model constructors
+
+## NDR: communities become latent scores
+
+```{r ndr-overview}
+nda_fit <- ndr(
+  swiss,
+  cor_method = "spearman",
+  cor_type = "full",
+  centrality = "pagerank",
+  seed = 42
+)
+nda_fit
+summary(nda_fit)
+head(predict(nda_fit, swiss))
+```
+
+## NDRLM: a latent input model from the published example
+
+The supervised example follows the low-sample-size `mtcars` analysis in
+@Kosztyan2026NBSEM. Ten observed input indicators form two input-side latent
+variables, which are then used to model fuel efficiency.
+
+```{r ndrlm-overview}
+X_car <- mtcars[, setdiff(names(mtcars), "mpg")]
+Y_car <- mtcars["mpg"]
+input_membership <- c(
+  cyl = 1, disp = 2, hp = 1, drat = 2, wt = 2,
+  qsec = 1, vs = 1, am = 2, gear = 2, carb = 1
+)
+
+ndrlm_fit <- ndrlm(
+  Y_car, X_car,
+  latents = "in",
+  optimize = FALSE,
+  membership.X = input_membership,
+  regression = "lm",
+  seed = 42
+)
+summary(ndrlm_fit)
+round(ndrlm_fit$NDAin$loadings, 3)
+head(predict(ndrlm_fit, X_car))
+```
+
+# Visible model results
+
+All figures are static and portable. In an NDR graph every observed indicator
+uses a rectangle; community membership is encoded by colour only. Positive
+associations are green, negative associations are red, and absolute magnitude
+controls edge width. In an NDRLM graph rectangles denote observed variables
+and circles are reserved for latent variables. The NDR network below contains
+observed indicators only, drawn as rectangles. Its communities are groups of
+indicators, not additional nodes named C1 or C2. In the biplot, NDA1 and NDA2
+are score axes. In the supervised network, NDAin1 and NDAin2 are two distinct
+latent predictor nodes. These are three views of two different fitted models;
+their community numbers are local to each model and do not identify shared
+variables across models.
+
+## Indicator association network
+
+```{r model-methods, fig.cap="Observed Swiss indicators. Colour indicates community; there are no latent nodes in this view."}
+nda_network <- plot(
+  nda_fit, interactive = FALSE, show_weights = TRUE,
+  shape = "automatic"
+)
+nda_network
+```
+
+## Observation scores and indicator loadings
+
+The points are Swiss observations. The arrows represent indicators. Neither
+points nor arrows are community nodes. Score-axis names refer only to this
+NDR fit.
+
+```{r model-biplot, fig.cap="Swiss observations and indicator directions on the fitted NDR score axes."}
+nda_biplot <- biplot(
+  nda_fit, view_3D = FALSE, interactive = FALSE
+)
+nda_biplot
+```
+
+## Latent predictor path model
+
+Each observed car indicator appears once as a rectangle; each of the two
+latent predictors appears once as a circle. Fuel efficiency (mpg) is an
+observed response. Edge labels show loadings or regression coefficients;
+these quantities have different units and should be interpreted separately.
+
+```{r model-paths, fig.cap="Ten observed car indicators, two latent input predictors, and the observed mpg response."}
+ndrlm_network <- plot(
+  ndrlm_fit, sig = 1, interactive = FALSE,
+  show_edge_labels = TRUE, shape = "automatic"
+)
+ndrlm_network
+```
+
+For `nda` objects, `predict()` returns latent scores. For `ndrlm` objects,
+`predict()` returns response predictions, while `fitted()` and `residuals()`
+preserve response names. The dedicated workflow vignettes expand the two model
+families and execute their advanced options.
+
+# References
+
+The references connect the original NDA method, its generalized and Hungarian
+presentations, the package implementation, and the supervised extension
+[@Kosztyan2022; @Kosztyan2023; @Kosztyan2024; @Kosztyan2026Packages;
+@Kosztyan2026NBSEM].
+
+::: {#refs}
+:::
