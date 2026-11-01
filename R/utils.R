@@ -47,7 +47,12 @@
   if (!all(finite) || diff(limits) <= sqrt(.Machine$double.eps)) {
     return(rep(mean(range), length(magnitude)))
   }
-  range[1L] + diff(range) * (magnitude - limits[1L]) / diff(limits)
+  scaled <- range[1L] +
+    diff(range) * (magnitude - limits[1L]) / diff(limits)
+  # Floating-point arithmetic can place an endpoint a few machine units
+  # outside the requested interval on some platforms.  Keep the public
+  # minimum and maximum as exact display bounds.
+  pmin(range[2L], pmax(range[1L], scaled))
 }
 
 .nda_numeric_matrix <- function(x, name = "x", min_cols = 1L) {
