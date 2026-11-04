@@ -89,7 +89,10 @@ With \code{regression = "ridge"}, \code{"elastic_net"}, or \code{"loess"},
 each \code{fits[[i]]} is an NDRLM engine wrapper. It contains the engine name in
 \code{method}, the underlying fitted object in \code{fit}, and common
 fitted-value, residual, coefficient, and predictor metadata. Penalized fits
-additionally store the selected \code{lambda} and effective \code{alpha}. For
+additionally store the selected \code{lambda}, effective \code{alpha}, and
+standardized coefficients calculated on the complete training observations.
+The plot method applies the same standardization to ordinary least-squares
+fits, including compatible legacy \code{lm} objects. For
 engine-independent code, use \code{summary}, \code{predict}, \code{fitted},
 \code{residuals}, and \code{plot} on the enclosing \code{ndrlm} object instead
 of relying on these internal fields.
@@ -139,3 +142,5 @@ if (requireNamespace("glmnet", quietly = TRUE)) {
 }
 }
 \keyword{multivariate}
+
+

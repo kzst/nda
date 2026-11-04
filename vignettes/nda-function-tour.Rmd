@@ -8,6 +8,8 @@ output:
     toc: true
     number_sections: true
     css: vignette.css
+    self_contained: false
+    lib_dir: nda-vignette-libs
 vignette: >
   %\VignetteIndexEntry{A visual tour of the nda package}
   %\VignetteEngine{knitr::rmarkdown}
@@ -18,8 +20,11 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.width = 8,
-  fig.height = 5,
+  fig.width = 7.2,
+  fig.height = 4.8,
+  dpi = 96,
+  fig.retina = 1,
+  out.width = "100%",
   warning = FALSE,
   message = FALSE
 )
@@ -311,3 +316,5 @@ presentations, the package implementation, and the supervised extension
 
 ::: {#refs}
 :::
+
+

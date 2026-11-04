@@ -8,6 +8,8 @@ output:
     toc: true
     number_sections: true
     css: vignette.css
+    self_contained: false
+    lib_dir: nda-vignette-libs
 vignette: >
   %\VignetteIndexEntry{Supervised NDRLM: latent-variable regression and optimization}
   %\VignetteEngine{knitr::rmarkdown}
@@ -18,8 +20,11 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.width = 8,
-  fig.height = 5.5,
+  fig.width = 7.2,
+  fig.height = 4.8,
+  dpi = 96,
+  fig.retina = 1,
+  out.width = "100%",
   warning = FALSE,
   message = FALSE
 )
@@ -200,8 +205,8 @@ if (requireNamespace("glmnet", quietly = TRUE)) {
   )
   engine_results
   round(cbind(
-    ridge = fit_ridge$fits[[1]]$coefficients,
-    elastic_net = fit_elastic$fits[[1]]$coefficients
+    ridge = fit_ridge$fits[[1]]$standardized_coefficients,
+    elastic_net = fit_elastic$fits[[1]]$standardized_coefficients
   ), 3)
 } else {
   cat("Install the suggested package 'glmnet' to run ridge and elastic net.\n")
@@ -220,9 +225,11 @@ head(predict(fit_loess, X_car["wt"]))
 fit_loess$fit_stats
 ```
 
-Raw coefficients from different engines or differently scaled predictors are
-not standardized effect-size comparisons. Compare prediction metrics on a
-common validation design when prediction is the scientific goal.
+The displayed ridge and elastic-net values are standardized coefficients.
+The path plots use the same scale by default, making linear path magnitudes
+comparable across differently scaled predictors and responses. Prediction
+metrics should still be compared on a common validation design when
+prediction is the scientific goal.
 
 # NSGA-II optimization and convergence history
 
@@ -275,11 +282,17 @@ target value encountered so far. A short flat segment is not proof of global
 convergence, but the trace makes search progress transparent and helps compare
 longer runs and restarts.
 
-# Latent path network
+# Static and interactive latent path networks
 
-```{r ndrlm-static-network, fig.cap="Latent-input NDRLM graph. Rectangles are observed indicators, circles are latent variables, and path colour carries sign."}
+## Static latent path network
+
+The both-sides model is used here because it shows the full four-layer
+structure: observed inputs, two input latent variables, one output latent
+variable, and observed outputs.
+
+```{r ndrlm-static-network, fig.cap="Both-sides NDRLM graph. Rectangles are observed indicators, circles are latent variables, and path colour carries sign."}
 path_network <- plot(
-  fit_latent,
+  fit_both,
   sig = 1,
   interactive = FALSE,
   show_edge_labels = TRUE,
@@ -290,12 +303,36 @@ path_network
 
 Observed variables are rectangles and latent variables are circles, following
 standard structural-model notation. Each latent variable and its observed
-indicators share one community colour. Measurement loadings are grey. Positive
+indicators share one colour from the default light qualitative palette.
+Measurement loadings are grey. Positive
 regression paths are green, negative paths are red, and absolute magnitude is
-mapped to width separately within loadings and structural paths. All lines are
-solid by default. Colours, line types, shapes,
+mapped to width separately within loadings and structural paths. Structural
+labels and widths use standardized coefficients for OLS, ridge, and elastic
+net; loading labels retain their loading scale. Measurement
+links between observed and latent variables are dashed; structural paths are
+solid. Latent nodes are centred on the indicators assigned to them. Active
+layers are packed without leaving blank columns, and the default fills are
+slightly lightened and translucent. Edge labels use opaque backgrounds
+displaced from their paths. Colours, line types, shapes,
 and the minimum/maximum width can be overridden explicitly when a publication
 requires another convention.
+
+## Interactive latent path network
+
+The interactive graph preserves the static layout and visual grammar. Nodes
+remain movable, and edge labels stay readable on an opaque background while
+the view is zoomed or rearranged.
+
+```{r ndrlm-interactive-network}
+interactive_path_network <- plot(
+  fit_both,
+  sig = 1,
+  interactive = TRUE,
+  show_edge_labels = TRUE,
+  shape = "automatic"
+)
+interactive_path_network$widget
+```
 
 # References
 
@@ -306,3 +343,7 @@ implementation and the supervised network-based structural extension
 
 ::: {#refs}
 :::
+
+
+
+

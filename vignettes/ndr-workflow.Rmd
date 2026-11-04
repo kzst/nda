@@ -8,6 +8,8 @@ output:
     toc: true
     number_sections: true
     css: vignette.css
+    self_contained: false
+    lib_dir: nda-vignette-libs
 vignette: >
   %\VignetteIndexEntry{Generalized NDR: associations, communities, and latent scores}
   %\VignetteEngine{knitr::rmarkdown}
@@ -18,8 +20,11 @@ vignette: >
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.width = 8,
-  fig.height = 5.5,
+  fig.width = 7.2,
+  fig.height = 4.8,
+  dpi = 96,
+  fig.retina = 1,
+  out.width = "100%",
   warning = FALSE,
   message = FALSE
 )
@@ -193,7 +198,9 @@ cluster_network <- plot(
 cluster_network
 ```
 
-# Static network and biplot
+# Static and interactive networks
+
+## Static association network
 
 ```{r ndr-static-network, fig.cap="NDR association network: colour denotes community, edge colour denotes sign, and width denotes absolute association."}
 static_network <- plot(
@@ -207,9 +214,30 @@ static_network
 ```
 
 All observed indicators use the same shape. The two communities differ only
-by node colour. Solid green and red edges distinguish positive and negative
+by colours from the default light qualitative palette. Solid green and red
+edges distinguish positive and negative
 associations; their thickness is scaled between the requested minimum and
-maximum widths.
+maximum widths. Each edge label has an opaque background and is displaced from
+the edge so that neither the line nor another label overwrites the number.
+
+## Interactive association network
+
+The interactive representation uses exactly the same colour, shape, sign, and
+width grammar. Nodes can be moved, while zooming, panning, selection, and
+nearest-neighbour highlighting support closer inspection.
+
+```{r ndr-interactive-network}
+interactive_network <- plot(
+  visual_fit,
+  cuts = 0.3,
+  interactive = TRUE,
+  show_weights = TRUE,
+  shape = "automatic"
+)
+interactive_network$widget
+```
+
+# Biplot
 
 ```{r ndr-biplot, fig.cap="Two-factor NDR biplot for the fixed Swiss-data communities."}
 score_biplot <- biplot(
@@ -303,3 +331,5 @@ interface, and the supervised extension [@Kosztyan2022; @Kosztyan2023;
 
 ::: {#refs}
 :::
+
+

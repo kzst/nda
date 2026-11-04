@@ -7,3 +7,7 @@
 *.tar.gz
 .positai/
 .claude/
+vignettes/nda-vignette-libs/
+vignettes/*_files/
+
+

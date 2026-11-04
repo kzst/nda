@@ -17,16 +17,22 @@
 plot.nda <- function(x, cuts = 0.3, interactive = FALSE, edgescale = 1,
                      labeldist = -1.5, show_weights = FALSE,
                      shapes = NULL, shape = "automatic",
+                     static.engine = c("grid", "igraph"),
                      edge.color.links = TRUE, edge.colors = NULL,
                      positive.color = "#009E73", negative.color = "#C62828",
                      neutral.color = "grey65", positive.lty = 1,
                      negative.lty = 1, neutral.lty = 1,
                      edge.width.range = c(1, 6),
                      edge.label.size = 10, edge.label.color = "#333333",
-                     vertex.label.size = 12, vertex.label.color = "black",
+                     edge.label.background = "#FFFFFFE6",
+                     edge.label.offset = 0.022,
+                     vertex.label.size = 12,
+                     vertex.label.color = "automatic",
+                     node.border.color = "#25313C",
                      layout = "nicely", igraph_args = list(),
                      visnetwork_args = list(), ...) {
   if (!inherits(x, "nda")) stop("x must inherit from 'nda'.", call. = FALSE)
+  static.engine <- match.arg(static.engine)
   similarity <- x$R %||% x$correlation
   if (is.null(similarity)) {
     stop("x does not contain an association matrix in $R or $correlation.",
@@ -73,9 +79,9 @@ plot.nda <- function(x, cuts = 0.3, interactive = FALSE, edgescale = 1,
   }
   membership[is.na(membership) | membership < 0L] <- 0L
   groups <- if (length(membership)) max(membership, 0L) else 0L
-  palette <- grDevices::hcl.colors(max(1L, groups), "Dark 3")
+  palette <- grDevices::hcl.colors(max(1L, groups), "Set 2")
   vertex_color <- ifelse(membership > 0L,
-                         palette[pmax(1L, membership)], "grey80")
+                         palette[pmax(1L, membership)], "grey88")
   if (!is.null(shapes)) shape <- shapes
   shape <- .nda_plot_shapes(shape, igraph::vcount(graph), "rectangle")
   edge_pairs <- igraph::as_edgelist(graph, names = FALSE)
@@ -121,10 +127,15 @@ plot.nda <- function(x, cuts = 0.3, interactive = FALSE, edgescale = 1,
   edge_width <- .nda_edge_widths(association_values, edge.width.range)
   if (!is.null(edgescale) && is.numeric(edgescale) && length(edgescale) == 1L &&
       is.finite(edgescale) && edgescale >= 0) edge_width <- edge_width * edgescale
-  edge_label <- if (show_weights) format(round(association_values, 3), trim = TRUE) else ""
+  edge_label <- if (show_weights) {
+    format(round(association_values, 3), trim = TRUE)
+  } else rep("", length(association_values))
+  node_label_color <- if (identical(vertex.label.color, "automatic")) {
+    .nda_contrast_color(vertex_color)
+  } else rep(vertex.label.color, length.out = length(vertex_color))
   igraph::V(graph)$color <- vertex_color
   igraph::V(graph)$shape <- shape
-  igraph::V(graph)$label.color <- vertex.label.color
+  igraph::V(graph)$label.color <- node_label_color
   igraph::V(graph)$label.cex <- vertex.label.size / 12
   igraph::E(graph)$color <- edge_color
   igraph::E(graph)$lty <- edge_lty
@@ -133,14 +144,42 @@ plot.nda <- function(x, cuts = 0.3, interactive = FALSE, edgescale = 1,
   igraph::E(graph)$label.cex <- edge.label.size / 12
   igraph::E(graph)$width <- edge_width
 
+  nodes <- data.frame(
+    id = seq_len(igraph::vcount(graph)),
+    label = igraph::V(graph)$name,
+    color = vertex_color,
+    shape = shape,
+    label_color = node_label_color,
+    stringsAsFactors = FALSE
+  )
+  render_edges <- data.frame(
+    from = if (nrow(edge_pairs)) edge_pairs[, 1L] else integer(),
+    to = if (nrow(edge_pairs)) edge_pairs[, 2L] else integer(),
+    width = edge_width,
+    color = edge_color,
+    lty = edge_lty,
+    label = edge_label,
+    stringsAsFactors = FALSE
+  )
+  coordinates <- .nda_igraph_layout(graph, layout)
+  static_grob <- .nda_network_grob(nodes, render_edges, coordinates,
+    directed = directed, vertex.label.size = vertex.label.size,
+    edge.label.size = edge.label.size,
+    edge.label.color = edge.label.color,
+    edge.label.background = edge.label.background,
+    edge.label.offset = edge.label.offset,
+    node.border.color = node.border.color)
+
   if (interactive) {
-    nodes <- data.frame(
-      id = seq_len(igraph::vcount(graph)),
-      label = igraph::V(graph)$name,
-      color = vertex_color,
-      shape = gsub("rectangle", "box", gsub("circle", "ellipse", shape)),
-      font.size = vertex.label.size,
-      stringsAsFactors = FALSE)
+    vis_nodes <- nodes
+    vis_nodes$shape <- gsub("rectangle", "box",
+      gsub("circle", "ellipse", vis_nodes$shape))
+    vis_nodes$font.size <- vertex.label.size
+    vis_nodes$font.color <- vis_nodes$label_color
+    vis_nodes$borderWidth <- 1.5
+    vis_nodes$title <- ifelse(membership > 0L,
+      paste0(vis_nodes$label, " - community ", membership),
+      paste0(vis_nodes$label, " - excluded"))
     edges <- data.frame(
       from = edge_pairs[, 1L], to = edge_pairs[, 2L],
       width = edge_width,
@@ -149,22 +188,42 @@ plot.nda <- function(x, cuts = 0.3, interactive = FALSE, edgescale = 1,
       arrows = if (directed) "to" else "",
       font.size = edge.label.size, font.color = edge.label.color,
       stringsAsFactors = FALSE)
+    edges$font.background <- edge.label.background
     widget <- do.call(visNetwork::visNetwork,
-      c(list(nodes = nodes, edges = edges, height = "800px", width = "100%"),
+      .nda_merge_args(list(nodes = vis_nodes, edges = edges,
+        height = "800px", width = "100%"),
         visnetwork_args$network %||% list()))
     widget <- do.call(visNetwork::visNodes,
-      c(list(graph = widget), visnetwork_args$nodes %||% list()))
+      .nda_merge_args(list(graph = widget, margin = 12,
+        shadow = list(enabled = TRUE, color = "rgba(0,0,0,0.16)",
+          size = 5, x = 1, y = 2)),
+        visnetwork_args$nodes %||% list()))
     widget <- do.call(visNetwork::visEdges,
-      c(list(graph = widget), visnetwork_args$edges %||% list()))
+      .nda_merge_args(list(graph = widget,
+        font = list(background = edge.label.background, align = "middle",
+          strokeWidth = 0),
+        smooth = list(enabled = TRUE, type = "dynamic", roundness = 0.12)),
+        visnetwork_args$edges %||% list()))
     widget <- do.call(visNetwork::visOptions,
-      c(list(graph = widget, highlightNearest = TRUE, selectedBy = "label"),
-        visnetwork_args$options %||% list()))
+      .nda_merge_args(list(graph = widget, highlightNearest = TRUE,
+        selectedBy = "label"), visnetwork_args$options %||% list()))
+    widget <- do.call(visNetwork::visInteraction,
+      .nda_merge_args(list(graph = widget, dragNodes = TRUE,
+        dragView = TRUE, zoomView = TRUE, hideEdgesOnDrag = FALSE),
+        visnetwork_args$interaction %||% list()))
+    vis_layout <- if (is.character(layout)) switch(layout,
+      nicely = "layout_nicely", circle = "layout_in_circle",
+      sphere = "layout_on_sphere", grid = "layout_on_grid",
+      paste0("layout_with_", layout)) else "layout_nicely"
     widget <- do.call(visNetwork::visIgraphLayout,
-      c(list(graph = widget, layout = paste0("layout_", layout), physics = TRUE),
-        visnetwork_args$layout %||% list()))
+      .nda_merge_args(list(graph = widget, layout = vis_layout,
+        physics = TRUE), visnetwork_args$layout %||% list()))
   } else widget <- NULL
-  out <- list(graph = graph, widget = widget, interactive = interactive,
-              layout = layout, labeldist = labeldist,
+  out <- list(graph = graph, nodes = nodes, edges = render_edges,
+              widget = widget, interactive = interactive,
+              static.engine = static.engine, static_grob = static_grob,
+              layout = layout, coordinates = coordinates,
+              labeldist = labeldist,
               igraph_args = c(igraph_args, list(...)))
   class(out) <- c("nda_plot", "list")
   out
@@ -174,15 +233,10 @@ plot.nda <- function(x, cuts = 0.3, interactive = FALSE, edgescale = 1,
 print.nda_plot <- function(x, ...) {
   if (x$interactive) {
     print(x$widget)
+  } else if (identical(x$static.engine, "grid")) {
+    .nda_draw_network_grob(x$static_grob)
   } else {
-    layout_value <- if (is.character(x$layout)) {
-      layout_name <- switch(x$layout, nicely = "layout_nicely", circle = "layout_in_circle",
-                            sphere = "layout_on_sphere", grid = "layout_on_grid",
-                            paste0("layout_with_", x$layout))
-      fun <- get(layout_name, envir = asNamespace("igraph"), inherits = FALSE)
-      fun(x$graph)
-    } else x$layout
-    args <- c(list(x = x$graph, layout = layout_value,
+    args <- c(list(x = x$graph, layout = x$coordinates,
                    vertex.label.dist = x$labeldist), x$igraph_args, list(...))
     do.call(igraph::plot.igraph, args)
   }

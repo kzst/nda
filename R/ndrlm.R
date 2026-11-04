@@ -118,6 +118,55 @@
   coefficients[names(coefficients) != "(Intercept)"]
 }
 
+.ndrlm_standardize_coefficients <- function(coefficients, predictors, response) {
+  coefficient_names <- names(coefficients)
+  coefficients <- as.numeric(coefficients)
+  names(coefficients) <- coefficient_names
+  if (!length(coefficients) || is.null(coefficient_names)) return(coefficients)
+  predictors <- as.data.frame(predictors, check.names = FALSE)
+  response <- as.numeric(response)
+  response_sd <- stats::sd(response)
+  result <- stats::setNames(rep(NA_real_, length(coefficients)),
+                            coefficient_names)
+  if (!is.finite(response_sd) || response_sd <= .Machine$double.eps) {
+    return(result)
+  }
+  predictor_sd <- vapply(predictors, stats::sd, numeric(1L))
+  matched <- intersect(coefficient_names, names(predictor_sd))
+  result[matched] <- coefficients[matched] * predictor_sd[matched] / response_sd
+  result
+}
+
+.ndrlm_fit_standardized_coefficients <- function(fit) {
+  metadata <- .ndrlm_fit_metadata(fit)
+  if (!is.null(metadata$standardized_coefficients)) {
+    return(metadata$standardized_coefficients)
+  }
+  if (!inherits(fit, "lm") && !is.null(fit$standardized_coefficients)) {
+    return(fit$standardized_coefficients)
+  }
+  coefficients <- .ndrlm_fit_coefficients(fit)
+  underlying <- .ndrlm_underlying_fit(fit)
+  if (!inherits(underlying, "lm")) return(coefficients)
+  model_frame <- tryCatch(stats::model.frame(underlying),
+                          error = function(e) NULL)
+  design <- tryCatch(stats::model.matrix(underlying),
+                     error = function(e) NULL)
+  if (is.null(model_frame) || is.null(design)) return(coefficients)
+  response <- tryCatch(stats::model.response(model_frame),
+                       error = function(e) NULL)
+  if (is.null(response)) return(coefficients)
+  intercept <- colnames(design) == "(Intercept)"
+  design <- design[, !intercept, drop = FALSE]
+  if (!all(names(coefficients) %in% colnames(design)) &&
+      ncol(design) == length(coefficients)) {
+    colnames(design) <- names(coefficients)
+  }
+  standardized <- .ndrlm_standardize_coefficients(
+    coefficients, design, response)
+  if (all(!is.finite(standardized))) coefficients else standardized
+}
+
 .ndrlm_fit_p_values <- function(fit) {
   metadata <- .ndrlm_fit_metadata(fit)
   if (!is.null(metadata$p_values)) return(metadata$p_values)
@@ -136,7 +185,21 @@
 
 .ndrlm_fit_response <- function(fit) {
   metadata <- .ndrlm_fit_metadata(fit)
-  metadata$response %||% fit$response %||% NULL
+  response <- metadata$response %||% fit$response %||% NULL
+  if (length(response) && !is.na(response[1L]) &&
+      nzchar(as.character(response[1L]))) {
+    return(as.character(response[1L]))
+  }
+  underlying <- .ndrlm_underlying_fit(fit)
+  if (inherits(underlying, "lm")) {
+    formula <- tryCatch(stats::formula(underlying),
+                        error = function(e) NULL)
+    if (!is.null(formula) && length(formula) >= 3L) {
+      response <- all.vars(formula[[2L]])
+      if (length(response)) return(response[1L])
+    }
+  }
+  NULL
 }
 
 .ndrlm_lm_formula <- function(response, predictors, env = parent.frame()) {
@@ -167,6 +230,9 @@
     fitted <- rep(NA_real_, nrow(data)); fitted[keep] <- stats::fitted(fit)
     coefficients <- stats::coef(fit)[-1L]
     names(coefficients) <- original_names
+    standardized_coefficients <- .ndrlm_standardize_coefficients(
+      coefficients, lm_train[, original_names, drop = FALSE],
+      lm_train$.response)
     p_values <- rep(NA_real_, length(original_names))
     names(p_values) <- original_names
     coefficient_table <- summary(fit)$coefficients
@@ -176,7 +242,9 @@
       method = regression, fitted = fitted,
       residuals = data$.response - fitted, response = response,
       x_names = original_names, safe_names = original_names,
-      coefficients = coefficients, p_values = p_values
+      coefficients = coefficients,
+      standardized_coefficients = standardized_coefficients,
+      p_values = p_values
     )
     return(fit)
   }
@@ -191,6 +259,7 @@
     return(list(method = regression, fit = fit, fitted = fitted,
                 residuals = data$.response - fitted, response = response,
                 x_names = original_names, safe_names = safe_names, coefficients = weights,
+                standardized_coefficients = weights,
                 p_values = loess_p))
   }
   if (!requireNamespace("glmnet", quietly = TRUE)) {
@@ -214,11 +283,16 @@
   }
   fitted <- rep(NA_real_, nrow(data)); fitted[keep] <- pred
   names(coefficients) <- original_names
+  standardization_data <- train[, -1L, drop = FALSE]
+  colnames(standardization_data) <- original_names
+  standardized_coefficients <- .ndrlm_standardize_coefficients(
+    coefficients, standardization_data, train$.response)
   list(method = regression, fit = fit, fitted = fitted,
        residuals = data$.response - fitted, response = response,
        x_names = original_names, safe_names = safe_names,
        design_names = colnames(matrix_x),
        coefficients = coefficients,
+       standardized_coefficients = standardized_coefficients,
        p_values = stats::setNames(rep(NA_real_, length(coefficients)), original_names),
        lambda = selected_lambda, alpha = model_alpha)
 }
@@ -342,8 +416,11 @@
 #' each \code{fits[[i]]} is an NDRLM engine wrapper. It contains the engine name
 #' in \code{method}, the underlying fitted object in \code{fit}, and common
 #' fitted-value, residual, coefficient, and predictor metadata. Penalized fits
-#' additionally store the selected \code{lambda} and effective \code{alpha}.
-#' For engine-independent code, use \code{summary}, \code{predict},
+#' additionally store the selected \code{lambda}, effective \code{alpha}, and
+#' standardized coefficients calculated on the complete training observations.
+#' The plot method applies the same standardization to ordinary least-squares
+#' fits, including compatible legacy \code{lm} objects. For engine-independent
+#' code, use \code{summary}, \code{predict},
 #' \code{fitted}, \code{residuals}, and \code{plot} on the enclosing
 #' \code{ndrlm} object instead of relying on these internal fields.
 #'
@@ -612,3 +689,5 @@ ndrlm <- function(Y, X, latents = "in", dircon = FALSE, optimize = TRUE,
   class(result) <- c("ndrlm", "list")
   result
 }
+
+

@@ -28,6 +28,7 @@ Imports:
     stats,
     graphics,
     grDevices,
+    grid,
     igraph,
     Matrix,
     MASS,

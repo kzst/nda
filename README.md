@@ -58,14 +58,19 @@ network <- plot(
 )
 network
 
+# The same visual grammar as an embedded interactive HTML widget.
+interactive_network <- plot(fit, interactive = TRUE, show_weights = TRUE)
+interactive_network
+
 score_plot <- biplot(fit, view_3D = FALSE, interactive = FALSE)
 score_plot
 ```
 
-Community membership is shown by node colour. Indicators use one common rectangular shape
-by default; positive and negative associations use green and red edges, and
-absolute association controls edge width. Shapes, colours, line types, and the
-minimum/maximum width remain configurable.
+Community membership is shown with a light qualitative node-colour palette.
+Indicators use one common rectangular shape by default; positive and negative
+associations use green and red edges, and absolute association controls edge
+width. Shapes, colours, line types, and the minimum/maximum width remain
+configurable.
 
 `covar = TRUE` accepts an arbitrary square similarity matrix. For example,
 NDR can cluster observations from normalized Euclidean similarities:
@@ -156,12 +161,45 @@ static_paths <- plot(
   shape = "automatic"
 )
 static_paths
+
+interactive_paths <- plot(
+  model,
+  interactive = TRUE,
+  show_edge_labels = TRUE
+)
+interactive_paths
 ```
 
 Observed variables are rectangles and latent variables are circles. Each
-latent variable and its indicators share one community colour. Positive paths
-are green, negative paths are red, and absolute coefficient or loading
-magnitude controls width within its edge role.
+latent variable and its indicators share one light community colour. Positive
+paths are green, negative paths are red, and absolute standardized coefficient
+or loading magnitude controls width within its edge role. The plot computes
+standardized structural coefficients for ordinary linear, ridge, and
+elastic-net regression from the complete training observations; use
+`standardized.paths = FALSE` only when raw coefficients are required.
+Measurement links between
+observed and latent variables are dashed; structural paths are solid. Latent
+nodes are centred on their indicator groups, absent layers leave no empty
+horizontal column, and the default node fills are slightly translucent and
+lightened. Edge labels use a light background offset from the path to avoid
+overwriting thick lines. For legacy
+unnamed fit lists, the path target is recovered from the fitted response
+formula before any original-variable fallback is considered; standardized
+coefficients are reconstructed from the legacy fitted model.
+
+Static plots use the package's layered grid renderer by default. The legacy
+igraph renderer remains available with `static.engine = "igraph"`. Both static
+and interactive variants are printable objects, so the following pattern
+works with screen and file devices:
+
+```r
+p <- plot(model, interactive = FALSE)  # no drawing during assignment
+p                                      # draw now
+
+pdf("ndrlm-paths.pdf", width = 10, height = 6)
+p
+dev.off()
+```
 
 Expensive NSGA-II optimization is optional:
 
@@ -240,3 +278,5 @@ Generalized network-based dimensionality analysis.
 ## Authors
 
 Zsolt T. Kosztyan, Marcell T. Kurbucz, Attila I. Katona, and Zahid Khan.
+
+
