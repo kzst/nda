@@ -238,19 +238,20 @@ plot(
 
 ## Vignettes
 
-- A visual tour of the nda package:
-  [source](vignettes/nda-function-tour.Rmd) |
-  [HTML preview](vignette-preview/nda-function-tour.html)
-- Generalized NDR workflow:
-  [source](vignettes/ndr-workflow.Rmd) |
-  [HTML preview](vignette-preview/ndr-workflow.html)
-- Supervised NDRLM workflow:
-  [source](vignettes/ndrlm-workflow.Rmd) |
-  [HTML preview](vignette-preview/ndrlm-workflow.html)
+The source package builds three official vignettes:
 
-Standalone HTML previews are stored in [`vignette-preview/`](vignette-preview/).
-They are excluded from the source package build; `R CMD build` generates the
-official installed vignettes from the R Markdown sources.
+- `nda-function-tour`: a visual tour of the package;
+- `ndr-workflow`: the generalized NDR workflow;
+- `ndrlm-workflow`: supervised latent-variable regression.
+
+List or open them from an installed package with:
+
+```r
+vignette(package = "nda")
+vignette("nda-function-tour", package = "nda")
+vignette("ndr-workflow", package = "nda")
+vignette("ndrlm-workflow", package = "nda")
+```
 
 ## Reproducibility and performance
 
